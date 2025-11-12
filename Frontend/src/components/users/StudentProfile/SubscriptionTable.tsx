@@ -9,10 +9,17 @@ interface SubscriptionHistory {
 }
 
 interface SubscriptionHistoryTableProps {
-  data: SubscriptionHistory[];
+  data?: SubscriptionHistory[];
 }
 
-export default function SubscriptionHistoryTable({ data }: SubscriptionHistoryTableProps) {
+export default function SubscriptionHistoryTable({ data = [] }: SubscriptionHistoryTableProps) {
+  if (!data.length) {
+    return (
+      <div className="text-center text-gray-400 py-12 bg-white rounded-md border">
+        No subscription history found.
+      </div>
+    );
+  }
   return (
     <div className="overflow-x-auto rounded-lg border bg-white">
       <table className="min-w-full divide-y divide-gray-200">

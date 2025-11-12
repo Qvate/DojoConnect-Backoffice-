@@ -1,59 +1,29 @@
 import React from "react";
 import { FaEllipsisV } from "react-icons/fa";
-import SearchActionBar from "@/components/users/StudentProfile/SearchActionBar";
-import Pagination from "@/components/users/StudentProfile/Pagination";
+import SearchActionBar from "../StudentProfile/SearchActionBar";
+import Pagination from "../StudentProfile/Pagination";
 
+interface Activity {
+  id: string | number;
+  type: string;
+  description: string;
+  date: string;
+  time: string;
+}
 
+export default function ActivitiesTab({ activities = [] }: { activities?: Activity[] }) {
+  if (!activities.length) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <img src="/illustration.png" alt="No info" className="w-40 h-40 mb-4" />
+        <div className="text-black font-semibold text-lg">No info yet</div>
+      </div>
+    );
+  }
 
-const activities = [
-  {
-    id: 1,
-    type: "Subscription Upgraded",
-    description: "Dojo owner upgraded from Basic Plan to Pro Plan",
-    date: "Nov 12, 2024",
-    time: "09:32am",
-  },
-  {
-    id: 2,
-    type: "New Class Created",
-    description: "Added new class Karate for Beginners {Class ID: 45B9}",
-    date: "Nov 12, 2024",
-    time: "09:32am",
-  },
-  {
-    id: 3,
-    type: "Instructor Invited",
-    description: "Invited John Smith as instructor for Advanced Taekwondo",
-    date: "Nov 12, 2024",
-    time: "09:32am",
-  },
-  {
-    id: 4,
-    type: "Student Enrollment Approved",
-    description: "Approved new student Alex Johnson for Karate for Teens",
-    date: "Nov 12, 2024",
-    time: "09:32am",
-  },
-  {
-    id: 5,
-    type: "Profile Updated",
-    description: "Updated dojo address and contact number",
-    date: "Nov 12, 2024",
-    time: "09:32am",
-  },
-  {
-    id: 6,
-    type: "Subscription Cancelled",
-    description: "Cancelled or expired a subscription",
-    date: "Nov 12, 2024",
-    time: "09:32am",
-  },
-];
-
-export default function ActivitiesTab() {
   return (
     <div className="bg-white-100 rounded-md p-4">
-        <SearchActionBar />
+      <SearchActionBar />
       <table className="w-full">
         <thead>
           <tr className="bg-gray-200 rounded-md">
@@ -79,11 +49,14 @@ export default function ActivitiesTab() {
             </tr>
           ))}
         </tbody>
-        </table>
-        {/* Pagination with all-round border */}
-              <div className=" rounded-md p-2 mt-4">
-                <Pagination />
-              </div>
+      </table>
+      <div className="rounded-md p-2 mt-4">
+       <Pagination
+      totalRows={activities.length}
+      currentPage={1}
+      onPageChange={() => {}}
+      />
+      </div>
     </div>
   );
 }

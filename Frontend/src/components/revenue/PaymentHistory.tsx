@@ -8,24 +8,21 @@ const exportOptions = [
     key: "pdf",
     label: "As PDF",
     svg: (
-      // ...existing SVG code...
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">{/* ... */}</svg>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"></svg>
     ),
   },
   {
     key: "xlsx",
     label: "As XLSX",
     svg: (
-      // ...existing SVG code...
-      <svg width="10" height="12" viewBox="0 0 10 12" fill="none">{/* ... */}</svg>
+      <svg width="10" height="12" viewBox="0 0 10 12" fill="none"></svg>
     ),
   },
   {
     key: "csv",
     label: "As CSV",
     svg: (
-      // ...existing SVG code...
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none">{/* ... */}</svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"></svg>
     ),
   },
 ];
@@ -97,6 +94,11 @@ type PaymentHistoryProps = {
   customRange?: { start?: string; end?: string };
 };
 
+function getStatusColor(status: string) {
+  if (status.toLowerCase() === "paid") return "bg-green-500";
+  return "bg-yellow-500";
+}
+
 export default function PaymentHistory({ filter, customRange }: PaymentHistoryProps) {
   const [rows, setRows] = useState<PaymentRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -119,15 +121,28 @@ export default function PaymentHistory({ filter, customRange }: PaymentHistoryPr
     })
       .then((res) => res.json())
       .then((data) => {
+        // Try to use transactions array if available, else fallback to time_series
         if (data && data.success && data.data && Array.isArray(data.data.transactions)) {
           setRows(
             data.data.transactions.map((t: any) => ({
               dojo: t.dojo_name || t.dojo || "N/A",
               plan: t.plan || t.subscription_plan || "N/A",
               amount: t.amount ? `£${t.amount}` : "N/A",
-              date: t.date || t.created_at || "N/A",
+              date: t.date ? new Date(t.date).toLocaleDateString() : (t.created_at ? new Date(t.created_at).toLocaleDateString() : "N/A"),
               status: t.status || "Paid",
-              statusColor: t.status === "Paid" ? "bg-green-500" : "bg-yellow-500",
+              statusColor: getStatusColor(t.status || "Paid"),
+            }))
+          );
+        } else if (data && data.success && data.data && Array.isArray(data.data.time_series)) {
+          // fallback: show time_series as simple rows
+          setRows(
+            data.data.time_series.map((t: any) => ({
+              dojo: "-",
+              plan: "-",
+              amount: t.revenue ? `£${t.revenue}` : "£0",
+              date: t.date ? new Date(t.date).toLocaleDateString() : "N/A",
+              status: "Paid",
+              statusColor: getStatusColor("Paid"),
             }))
           );
         } else {

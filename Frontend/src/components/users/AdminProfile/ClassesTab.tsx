@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaPlus, FaEllipsisV } from "react-icons/fa";
 import Pagination from "../Pagination";
-import { useUserClasses } from "@/hooks/useUserClasses";
+import SearchFilterExport from "../../classes/SearchFilterExport";
+import CreateClassModal from "../../classes/CreateClassModal";
 
 const statusStyles: Record<string, string> = {
   active: "bg-green-100 text-green-700",
@@ -12,65 +13,54 @@ const statusStyles: Record<string, string> = {
 };
 
 interface ClassesTabProps {
-  email?: string | null;
+  classes: any[];
+  dojoName?: string;
+  ownerEmail?: string;
 }
 
-export default function ClassesTab({ email }: ClassesTabProps) {
-  // Only call the hook if email is valid
-  const shouldFetch = !!email;
-  const { classes, loading, error } = useUserClasses(shouldFetch ? email : "");
-
-  // Pagination logic
-  const [page, setPage] = React.useState(1);
+export default function ClassesTab({ classes, dojoName = "Test Dojo", ownerEmail = "admin@example.com" }: ClassesTabProps) {
+  const [page, setPage] = useState(1);
   const rowsPerPage = 10;
   const pagedClasses = classes.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
+  // View state: "list" or "create"
+  const [activeView, setActiveView] = useState<"list" | "create">("list");
+
   React.useEffect(() => {
-    setPage(1); // Reset to first page if email changes
-  }, [email]);
+    setPage(1);
+  }, [classes]);
 
-  if (!email) {
+  // Handler for Create New button
+  const handleCreateNew = () => setActiveView("create");
+  const handleCloseCreate = () => setActiveView("list");
+
+  // Render CreateClassModal as a section, not a modal
+  if (activeView === "create") {
     return (
-      <div className="flex items-center justify-center h-96">
-        <span>Loading user email...</span>
+      <div className="bg-white border border-gray-200 rounded-md p-4">
+        <CreateClassModal
+          open={true}
+          onClose={handleCloseCreate}
+          dojoName={dojoName}
+          ownerEmail={ownerEmail}
+          onCreated={handleCloseCreate}
+        />
       </div>
     );
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <span>Loading classes...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-96 text-red-500">
-        {error}
-      </div>
-    );
-  }
-
-  if (!classes.length) {
-    return (
-     <div className="flex flex-col items-center justify-center h-96">
-  <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" fill="none"><path fill="url(#a)" d="M75 150c41.421 0 75-33.579 75-75S116.421 0 75 0 0 33.579 0 75s33.579 75 75 75Z"/><path fill="#fff" d="M120 150H30V53a16.018 16.018 0 0 0 16-16h58a15.906 15.906 0 0 0 4.691 11.308A15.89 15.89 0 0 0 120 53v97Z"/><path fill="#E51B1B" d="M75 102c13.255 0 24-10.745 24-24S88.255 54 75 54 51 64.745 51 78s10.745 24 24 24Z"/><path fill="#fff" d="M83.485 89.314 75 80.829l-8.485 8.485-2.829-2.829L72.172 78l-8.486-8.485 2.829-2.829L75 75.172l8.485-8.486 2.829 2.829L77.828 78l8.486 8.485-2.829 2.829Z"/><path fill="#FCDEDE" d="M88 108H62a3 3 0 1 0 0 6h26a3 3 0 1 0 0-6ZM97 120H53a3 3 0 1 0 0 6h44a3 3 0 1 0 0-6Z"/><defs><linearGradient id="a" x1="75" x2="75" y1="0" y2="150" gradientUnits="userSpaceOnUse"><stop stopColor="#FCEDED"/><stop offset="1" stopColor="#FCDEDE"/></linearGradient></defs></svg>
-        <div className="text-black text-lg font-semibold mb-2">No classes in this profile</div>
-        <div className="text-gray-500 text-sm mb-6">There are no classes assigned to this user yet.</div>
-        <button
-    className="mt-6 flex items-center bg-[#E51B1B] text-white px-6 py-2 rounded-md font-semibold cursor-pointer"
-    
-  >
-    <FaPlus className="mr-2" /> Create Class
-  </button>
-      </div>
-    );
-  }
-
+  // Main classes list view
   return (
     <div className="bg-white border border-gray-200 rounded-md p-4">
+      {/* Search & Filter above the table */}
+      <div className="mb-6">
+        <SearchFilterExport
+          dojoName={dojoName}
+          ownerEmail={ownerEmail}
+          showCreate={false} // Hide modal logic inside SearchFilterExport
+          onCreateNew={handleCreateNew} // Custom handler for Create New
+        />
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full bg-white">
           <thead>
@@ -114,7 +104,7 @@ export default function ClassesTab({ email }: ClassesTabProps) {
           </tbody>
         </table>
       </div>
-      <div className="border border-gray-200 rounded-md p-2 mt-4">
+      <div className="border rounded-md p-2 mt-4">
         <Pagination
           totalRows={classes.length}
           rowsPerPage={rowsPerPage}
@@ -122,6 +112,20 @@ export default function ClassesTab({ email }: ClassesTabProps) {
           onPageChange={setPage}
         />
       </div>
+      {/* Empty state */}
+      {!classes.length && (
+        <div className="flex flex-col items-center justify-center h-96">
+          <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" fill="none"><path fill="url(#a)" d="M75 150c41.421 0 75-33.579 75-75S116.421 0 75 0 0 33.579 0 75s33.579 75 75 75Z"/><path fill="#fff" d="M120 150H30V53a16.018 16.018 0 0 0 16-16h58a15.906 15.906 0 0 0 4.691 11.308A15.89 15.89 0 0 0 120 53v97Z"/><path fill="#E51B1B" d="M75 102c13.255 0 24-10.745 24-24S88.255 54 75 54 51 64.745 51 78s10.745 24 24 24Z"/><path fill="#fff" d="M83.485 89.314 75 80.829l-8.485 8.485-2.829-2.829L72.172 78l-8.486-8.485 2.829-2.829L75 75.172l8.485-8.486 2.829 2.829L77.828 78l8.486 8.485-2.829 2.829Z"/><path fill="#FCDEDE" d="M88 108H62a3 3 0 1 0 0 6h26a3 3 0 1 0 0-6ZM97 120H53a3 3 0 1 0 0 6h44a3 3 0 1 0 0-6Z"/><defs><linearGradient id="a" x1="75" x2="75" y1="0" y2="150" gradientUnits="userSpaceOnUse"><stop stopColor="#FCEDED"/><stop offset="1" stopColor="#FCDEDE"/></linearGradient></defs></svg>
+          <div className="text-black text-lg font-semibold mb-2">No classes in this profile</div>
+          <div className="text-gray-500 text-sm mb-6">There are no classes assigned to this user yet.</div>
+          <button
+            className="mt-6 flex items-center bg-[#E51B1B] text-white px-6 py-2 rounded-md font-semibold cursor-pointer"
+            onClick={handleCreateNew}
+          >
+            <FaPlus className="mr-2" /> Create Class
+          </button>
+        </div>
+      )}
     </div>
   );
 }

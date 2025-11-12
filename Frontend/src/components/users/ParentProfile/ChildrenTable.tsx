@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaEllipsisV, FaPlus, FaTimes, FaChevronDown, FaEye, FaTrash } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
-import Pagination from '@/components/users/Pagination';
-import SearchActionBarCreateNew from '@/components/users/ParentProfile/SearchActionBarCreateNew';
+import Pagination from '../Pagination';
+import SearchActionBarCreateNew from './SearchActionBarCreateNew';
 
 interface Child {
   id: string | number;

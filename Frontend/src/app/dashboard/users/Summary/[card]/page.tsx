@@ -2,15 +2,16 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from 'next/navigation';
 import { FaPlus, FaDownload, FaSearch, FaFilter } from "react-icons/fa";
-import MainLayout from '@/components/Dashboard/MainLayout';
-import Pagination from '@/components/users/Pagination';
-import UsersTable from '@/components/users/UsersTable';
+import MainLayout from '../../../../../components/Dashboard/MainLayout';
+import Pagination from '../../../../../components/users/Pagination';
+import UsersTable from '../../../../../components/users/UsersTable';
 
 const cardMeta = {
   adminCount: { title: "Dojo Admins", breadcrumb: "Dojo Admins", role: "admin" },
   instructorCount: { title: "Instructors", breadcrumb: "Instructors", role: "instructor" },
   parentCount: { title: "Parents", breadcrumb: "Parents", role: "parent" },
-  studentCount: { title: "Students", breadcrumb: "Students", role: "student" },
+  // Accept both 'student' and 'child' for Students
+  studentCount: { title: "Students", breadcrumb: "Students", role: ["student", "child"] },
   card5: { title: "Pending Profiles", breadcrumb: "Pending Profiles" },
   card6: { title: "Recent Profiles", breadcrumb: "Recent Profiles" },
   card7: { title: "User Activity Trends", breadcrumb: "User Activity Trends" },
@@ -36,9 +37,10 @@ export default function CardSummaryPage() {
       fetch(`https://backoffice-api.dojoconnect.app/get_users`)
         .then(res => res.json())
         .then(data => {
-          // Map and filter users by backend role
+          // Accept both 'student' and 'child' for Students
+          const roles = Array.isArray(meta.role) ? meta.role : [meta.role];
           const filtered = (data.data || [])
-            .filter((u: any) => u.role === meta.role)
+            .filter((u: any) => roles.includes((u.role || "").toLowerCase()))
             .map((u: any) => ({
               id: u.id,
               name: u.name,

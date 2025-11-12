@@ -1,21 +1,20 @@
-'use client'
+"use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from 'next/navigation'
-import MainLayout from '@/components/Dashboard/MainLayout'
-import ProfileHeader from '@/components/users/ParentProfile/ProfileHeader';
-import ProfileTabs from '@/components/users/ParentProfile/ProfileTabs';
-import ProfileOverview from '@/components/users/ParentProfile/ProfileOverview';
-import EnrolledChildren from '@/components/users/ParentProfile/EnrolledChildren';
-import EnrolledClasses from '@/components/users/ParentProfile/EnrolledClasses';
-import ChildrenTable from '@/components/users/ParentProfile/ChildrenTable';
-import ClassesTable from '@/components/users/ParentProfile/ClassTable';
-import ActivitiesTable from '@/components/users/ParentProfile/ActivitiesTable';
-import SubscriptionTable from "@/components/users/ParentProfile/SubscriptionTable";
-import SubscriptionSummary from "@/components/users/ParentProfile/SubscriptionSummary";
-import PaymentMethod from "@/components/users/ParentProfile/PaymentMethod";
-import SearchActionBar from '@/components/users/ParentProfile/SearchActionBar';
-import SearchActionBarCreateNew from '@/components/users/ParentProfile/SearchActionBarCreateNew';
-import Pagination from '@/components/users/Pagination';
+import { useParams, useRouter } from 'next/navigation';
+import MainLayout from '../../../../../components/Dashboard/MainLayout';
+import ProfileHeader from '../../../../../components/users/ParentProfile/ProfileHeader';
+import ProfileTabs from '../../../../../components/users/ParentProfile/ProfileTabs';
+import ProfileOverview from '../../../../../components/users/ParentProfile/ProfileOverview';
+import EnrolledChildren from '../../../../../components/users/ParentProfile/EnrolledChildren';
+import EnrolledClasses from '../../../../../components/users/ParentProfile/EnrolledClasses';
+import ChildrenTable from '../../../../../components/users/ParentProfile/ChildrenTable';
+import ClassesTable from '../../../../../components/users/ParentProfile/ClassTable'; // <-- FIXED
+import ActivitiesTable from '../../../../../components/users/ParentProfile/ActivitiesTable';
+import SubscriptionTable from "../../../../../components/users/ParentProfile/SubscriptionTable";
+import SubscriptionSummary from "../../../../../components/users/ParentProfile/SubscriptionSummary";
+import PaymentMethod from "../../../../../components/users/ParentProfile/PaymentMethod";import SearchActionBar from '../../../../../components/users/ParentProfile/SearchActionBar';
+import SearchActionBarCreateNew from '../../../../../components/users/ParentProfile/SearchActionBarCreateNew';
+import Pagination from '../../../../../components/users/Pagination';
 
 const tabs = [
   "Overview",
@@ -34,31 +33,43 @@ export default function ParentProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const [email, setEmail] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProfile() {
       setLoading(true);
+      setError(null);
       if (!id) {
         setProfile(null);
         setLoading(false);
+        setError("No user ID provided.");
         return;
       }
-      let email = await getEmailById(id);
-      if (!email) {
+      try {
+        // Get email by id
+        const reUsers = await fetch("https://www.backoffice-api.dojoconnect.app/get_users");
+        if (!resUsers.ok) throw new Error("Failed to fetch users");
+        const usersData = await resUsers.json();
+        const user = usersData.data.find((u: any) => String(u.id) === String(id));
+        if (!user?.email) {
+          setProfile(null);
+          setEmail(null);
+          setLoading(false);
+          setError("User not found.");
+          return;
+        }
+        setEmail(user.email);
+
+        // Get detailed profile (role-specific)
+        const resProfile = await fetch(`https://apis.dojoconnect.app/user_profile_detailed/${user.email}`);
+        if (!resProfile.ok) throw new Error("Profile not found for this email.");
+        const profileData = await resProfile.json();
+        setProfile(profileData.data);
+      } catch (err: any) {
+        setError(err.message || "An error occurred.");
         setProfile(null);
-        setLoading(false);
-        return;
-      }
-      const res = await fetch("https://backoffice-api.dojoconnect.app/user_profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setProfile(data.user);
-      } else {
-        setProfile(null);
+        setEmail(null);
       }
       setLoading(false);
     }
@@ -66,8 +77,10 @@ export default function ParentProfilePage() {
   }, [id]);
 
   if (loading) return <MainLayout><div>Loading...</div></MainLayout>;
-  if (!profile) return <MainLayout><div>User not found</div></MainLayout>;
-  if (profile.role !== "parent") return <MainLayout><div>Not a Parent profile</div></MainLayout>;
+  if (!profile) return <MainLayout><div>{error}</div></MainLayout>;
+  if ((profile.role || profile.userType) !== "parent") {
+    return <MainLayout><div>Not a Parent profile</div></MainLayout>;
+  }
 
   return (
     <MainLayout>
@@ -79,26 +92,26 @@ export default function ParentProfilePage() {
             <>
               <ProfileOverview profile={profile} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-                <EnrolledChildren />
-                <EnrolledClasses />
+                <EnrolledChildren childrenData={profile.enrolled_children || []} />
+                <EnrolledClasses classesData={profile.enrolled_classes || []} />
               </div>
             </>
           )}
           {activeTab === "Children" && (
             <div>
-              <ChildrenTable childrenData={profile.children || []} />
+              <ChildrenTable childrenData={profile.enrolled_children || []} />
             </div>
           )}
           {activeTab === "Classes" && (
             <div>
-              <ClassesTable classesData={profile.classes || []} />
+              <ClassesTable classesData={profile.enrolled_classes || []} />
             </div>
           )}
           {activeTab === "Subscription" && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <SubscriptionSummary />
-                <PaymentMethod />
+                <SubscriptionSummary summary={profile.subscription_status} />
+                <PaymentMethod method={profile.payment_method} />
               </div>
               <div className="mt-8">
                 <div className="flex items-center justify-between bg-gray-100 px-4 py-3 rounded-md mb-2">
@@ -125,11 +138,4 @@ export default function ParentProfilePage() {
       </div>
     </MainLayout>
   );
-}
-
-async function getEmailById(id: string | string[]) {
-  const res = await fetch("https://backoffice-api.dojoconnect.app/get_users");
-  const data = await res.json();
-  const user = data.data.find((u: any) => String(u.id) === String(id));
-  return user?.email || null;
 }

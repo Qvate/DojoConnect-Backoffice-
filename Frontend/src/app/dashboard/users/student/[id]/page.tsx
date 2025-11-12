@@ -1,16 +1,16 @@
 'use client'
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from 'next/navigation'
-import MainLayout from '@/components/Dashboard/MainLayout'
-import ProfileHeader from "@/components/users/StudentProfile/ProfileHeader"
-import ProfileTabs from "@/components/users/StudentProfile/ProfileTabs"
-import ProfileOverview from "@/components/users/StudentProfile/ProfileOverview"
-import ClassesTab from "@/components/users/StudentProfile/ClassesTab"
-import AttendanceSummary from "@/components/users/StudentProfile/AttendanceSummary"
-import SubscriptionSummary from "@/components/users/StudentProfile/SubscriptionSummary"
-import PaymentMethod from "@/components/users/StudentProfile/PaymentMethod"
-import SubscriptionTable from "@/components/users/StudentProfile/SubscriptionTable"
-import ActivitiesTab from "@/components/users/StudentProfile/ActivitiesTab"
+import MainLayout from '../../../../../components/Dashboard/MainLayout'
+import ProfileHeader from "../../../../../components/users/StudentProfile/ProfileHeader"
+import ProfileTabs from "../../../../../components/users/StudentProfile/ProfileTabs"
+import ProfileOverview from "../../../../../components/users/StudentProfile/ProfileOverview"
+import ClassesTab from "../../../../../components/users/StudentProfile/ClassesTab"
+import AttendanceSummary from "../../../../../components/users/StudentProfile/AttendanceSummary"
+import SubscriptionSummary from "../../../../../components/users/StudentProfile/SubscriptionSummary"
+import PaymentMethod from "../../../../../components/users/StudentProfile/PaymentMethod"
+import SubscriptionTable from "../../../../../components/users/StudentProfile/SubscriptionTable"
+import ActivitiesTab from "../../../../../components/users/StudentProfile/ActivitiesTab"
 
 const tabs = [
   "Overview",
@@ -31,25 +31,19 @@ export default function StudentProfilePage() {
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
 
   useEffect(() => {
-    // You need to get the email for this user id.
-    // If you have a mapping, use it. Otherwise, fetch from a list endpoint first.
-    // For demo, let's assume you have a function getEmailById(id)
     async function fetchProfile() {
       setLoading(true);
-      let email = await getEmailById(id); // Replace with your logic
+      let email = await getEmailById(id);
       if (!email) {
         setProfile(null);
         setLoading(false);
         return;
       }
-      const res = await fetch("https://backoffice-api.dojoconnect.app/user_profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      // Fetch detailed student profile
+      const res = await fetch(`https://apis.dojoconnect.app/user_profile_detailed/${email}`);
       const data = await res.json();
       if (data.success) {
-        setProfile(data.user);
+        setProfile(data.data);
       } else {
         setProfile(null);
       }
@@ -59,25 +53,26 @@ export default function StudentProfilePage() {
   }, [id]);
 
   if (loading) return <MainLayout><div>Loading...</div></MainLayout>;
-  if (!profile) return <MainLayout><div>User not found</div></MainLayout>;
-  if (profile.role !== "student") return <MainLayout><div>Not a Student profile</div></MainLayout>;
-
+if (!profile) return <MainLayout><div>User not found</div></MainLayout>;
+if (!["student", "child"].includes((profile.role || "").toLowerCase())) {
+  return <MainLayout><div>Not a Student profile</div></MainLayout>;
+}
   return (
     <MainLayout>
       <div className="p-6">
         <ProfileHeader profile={profile} onBack={() => router.push('/dashboard?tab=users')} />
         <ProfileTabs tabs={[...tabs]} activeTab={activeTab} setActiveTab={setActiveTab} />
         {activeTab === "Overview" && <ProfileOverview profile={profile} />}
-        {activeTab === "Classes" && <ClassesTab />}
-        {activeTab === "Attendance Summary" && <AttendanceSummary />}
+        {activeTab === "Classes" && <ClassesTab classes={profile.enrolled_classes || []} />}
+        {activeTab === "Attendance Summary" && <AttendanceSummary summary={profile.attendance_summary || {}} />}
         {activeTab === "Subscription" && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
               <div className="h-full flex flex-col">
-                <SubscriptionSummary />
+                <SubscriptionSummary summary={profile.subscription || {}} />
               </div>
               <div className="h-full flex flex-col">
-                <PaymentMethod />
+                <PaymentMethod method={profile.payment_method || {}} />
               </div>
             </div>
             <div className="mt-8">
@@ -96,15 +91,14 @@ export default function StudentProfilePage() {
             </div>
           </>
         )}
-        {activeTab === "Activities" && <ActivitiesTab />}
+        {activeTab === "Activities" && <ActivitiesTab activities={profile.activity_log || []} />}
       </div>
     </MainLayout>
   );
 }
 
-// Dummy function for demo. Replace with your logic to get email by id.
+// Helper to get email by id
 async function getEmailById(id: string | string[]) {
-  // Example: fetch all users, find by id, return email
   const res = await fetch("https://backoffice-api.dojoconnect.app/get_users");
   const data = await res.json();
   const user = data.data.find((u: any) => String(u.id) === String(id));

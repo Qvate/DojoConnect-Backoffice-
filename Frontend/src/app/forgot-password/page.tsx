@@ -1,4 +1,4 @@
-import ForgotPasswordFlow from "@/components/auth/ForgotPasswordFlow";
+import ForgotPasswordFlow from "../../components/auth/ForgotPasswordFlow";
 
 export default function ForgotPasswordPage() {
   return <ForgotPasswordFlow />;

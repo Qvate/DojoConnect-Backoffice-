@@ -1,7 +1,23 @@
-import { attendanceSummary, attendanceRows } from "./AttendanceData";
 import { FaEllipsisV, FaRegCalendarAlt, FaRegChartBar, FaRegUser, FaSearch, FaFilter } from "react-icons/fa";
 
-export default function AttendanceTab() {
+export default function AttendanceTab({
+  attendance,
+  rows,
+}: {
+  attendance: any;
+  rows: any[];
+}) {
+  // Extract attendanceSummary from attendance prop
+  const attendanceSummary = attendance?.summary || {
+    totalSessions: 0,
+    averageRate: "0%",
+    lowAttendanceCount: 0,
+    lowAttendancePercent: "0%",
+  };
+
+  // Extract attendanceRows from attendance prop or use rows
+  const attendanceRows = attendance?.rows || rows;
+
   return (
     <div>
       {/* Attendance Summary & Cards in one container */}

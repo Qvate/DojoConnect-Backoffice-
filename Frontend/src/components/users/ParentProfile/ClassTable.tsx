@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaEllipsisV, FaEye, FaTrash, FaTimes } from "react-icons/fa";
-import SearchActionBar from '@/components/users/ParentProfile/SearchActionBar';
-import Pagination from '@/components/users/Pagination';
+import SearchActionBar from './SearchActionBar';
+import Pagination from '../Pagination';
 
 interface ClassRow {
   id: string | number;
@@ -13,11 +13,12 @@ interface ClassRow {
   status: string;
 }
 
-interface ClassesTableProps {
-  classesData: ClassRow[];
-}
+type EnrolledClassesProps = {
+  classesData: any[];
+};
 
-export default function ClassesTable({ classesData }: ClassesTableProps) {
+const EnrolledClasses = ({ classesData }: EnrolledClassesProps) => {
+
   const [actionClass, setActionClass] = useState<ClassRow | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteClass, setDeleteClass] = useState<ClassRow | null>(null);
@@ -72,7 +73,7 @@ export default function ClassesTable({ classesData }: ClassesTableProps) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
             {classesData.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50 cursor-pointer">
+              <tr key={row.id || idx} className="hover:bg-gray-50 cursor-pointer">
                 <td className="px-4 py-3">
                   <input type="checkbox" />
                 </td>
@@ -184,3 +185,5 @@ export default function ClassesTable({ classesData }: ClassesTableProps) {
     </>
   );
 }
+
+export default EnrolledClasses;

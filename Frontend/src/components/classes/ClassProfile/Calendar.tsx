@@ -2,34 +2,25 @@ import React from "react";
 import { FaChevronLeft, FaChevronRight, FaSearch, FaRegClock } from "react-icons/fa";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
 
-const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const staticCalendar = [
-  [
-    { day: "MON", date: 29, type: "class", className: "Karate Class", time: "10-11am" },
-    { day: "TUE", date: 30, type: "class", className: "Karate Class", time: "10-11am" },
-    { day: "WED", date: 31, type: "empty" },
-    { day: "THU", date: 1, type: "class", className: "Judo Class", time: "9-10am" },
-    { day: "FRI", date: 2, type: "class", className: "Aikido", time: "2-3pm" },
-    { day: "SAT", date: 3, type: "class", className: "Karate Class", time: "10-11am" },
-    { day: "SUN", date: 4, type: "empty" },
-  ],
-  [
-    { day: "MON", date: 5, type: "class", className: "Karate Class", time: "10-11am" },
-    { day: "TUE", date: 6, type: "class", className: "Judo Class", time: "9-10am" },
-    { day: "WED", date: 7, type: "empty" },
-    { day: "THU", date: 8, type: "class", className: "Judo Class", time: "9-10am" },
-    { day: "FRI", date: 9, type: "class", className: "Aikido", time: "2-3pm" },
-    { day: "SAT", date: 10, type: "class", className: "Karate Class", time: "10-11am" },
-    { day: "SUN", date: 11, type: "empty" },
-  ],
-  // ...add more weeks as needed, only "class" and "empty"
-];
+export const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const ClassScheduleCalendar = () => {
+interface DaySchedule {
+  day: string;
+  date: number | string;
+  type: "class" | "empty";
+  className?: string;
+  time?: string;
+}
+
+interface ClassScheduleCalendarProps {
+  schedule: DaySchedule[][];
+}
+
+const ClassScheduleCalendar: React.FC<ClassScheduleCalendarProps> = ({ schedule }) => {
   return (
     <div className="bg-white border border-gray-300 rounded-md p-4 w-full">
       {/* Header Row */}
-      <div className="flex items-center justify-between mb-2 border-t border-gray-300 pt-2 pb-4 border-b border-gray-300">
+      <div className="flex items-center justify-between mb-2 border-t border-gray-300 pt-2 pb-4 border-b">
         {/* Left: Today & Arrows */}
         <div className="flex items-center gap-2">
           <button className="bg-white border border-gray-300 rounded-md px-3 py-1 text-black text-sm font-medium">Today</button>
@@ -71,7 +62,7 @@ const ClassScheduleCalendar = () => {
       </div>
       {/* Calendar Weeks */}
       <div>
-        {staticCalendar.map((week, i) => (
+        {schedule.map((week, i) => (
           <div key={i} className="flex">
             {week.map((day, j) => {
               if (day.type === "empty") {

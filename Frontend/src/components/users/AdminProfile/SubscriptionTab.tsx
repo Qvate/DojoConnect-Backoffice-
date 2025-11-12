@@ -13,6 +13,15 @@ interface SubscriptionHistoryTableProps {
 }
 
 export default function SubscriptionHistoryTable({ data }: SubscriptionHistoryTableProps) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <img src="/illustration.png" alt="No info" className="w-40 h-40 mb-4" />
+        <div className="text-black font-semibold text-lg">No info yet</div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto rounded-lg border bg-white">
       <table className="min-w-full divide-y divide-gray-200">

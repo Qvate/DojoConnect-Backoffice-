@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import { FaChevronDown, FaChevronUp, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { usePathname } from 'next/navigation';
-import Sidebar from '@/components/Dashboard/Sidebar';
+import Sidebar from '../Dashboard/Sidebar';
 import RevenueSummary from './RevenueSummary';
 import PaymentHistory from './PaymentHistory';
-import Header from '@/components/Dashboard/Header';
+import Header from '../Dashboard/Header';
 
 const FILTERS = [
   { label: 'Today', value: 'today' },

@@ -1,15 +1,19 @@
 import { FaEllipsisV, FaRegCreditCard, FaRegMoneyBillAlt, FaExclamationCircle, FaDownload } from "react-icons/fa";
-import { subscriptionSummary, billingHistory } from "./SubscriptionData";
-export default function SubscriptionTab() {
+
+export default function SubscriptionTab({
+  subscription,
+  billing,
+}: {
+  subscription: any;
+  billing: any[];
+}) {
   return (
     <div>
-      {/* Subscription Summary & Cards */}
       <div className="rounded-md border border-gray-200 bg-white px-6 py-4 mb-8">
         <div className="flex items-center justify-between mb-6">
           <span className="text-black font-semibold text-base">Subscription Summary</span>
         </div>
         <div className="flex gap-4">
-          {/* Total Amount Generated */}
           <div className="flex-1 rounded-md border border-gray-100 bg-white px-6 py-4 flex flex-col justify-between">
             <div className="flex justify-between items-center mb-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100">
@@ -19,10 +23,9 @@ export default function SubscriptionTab() {
                 <FaEllipsisV />
               </button>
             </div>
-            <div className="text-2xl font-bold text-black mb-1">{subscriptionSummary.totalAmount}</div>
-            <div className="text-gray-500 text-sm">Total amount generated</div>
+            <div className="text-2xl font-bold text-black mb-1">{subscription?.price ?? "—"}</div>
+            <div className="text-gray-500 text-sm">Class price</div>
           </div>
-          {/* No. of Active Subscriptions */}
           <div className="flex-1 rounded-md border border-gray-100 bg-white px-6 py-4 flex flex-col justify-between">
             <div className="flex justify-between items-center mb-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100">
@@ -32,10 +35,9 @@ export default function SubscriptionTab() {
                 <FaEllipsisV />
               </button>
             </div>
-            <div className="text-2xl font-bold text-black mb-1">{subscriptionSummary.activeCount}</div>
-            <div className="text-gray-500 text-sm">No. of active subscriptions</div>
+            <div className="text-2xl font-bold text-black mb-1">{subscription?.subscription_type ?? "—"}</div>
+            <div className="text-gray-500 text-sm">Subscription type</div>
           </div>
-          {/* No. of Overdue Subscriptions */}
           <div className="flex-1 rounded-md border border-gray-100 bg-white px-6 py-4 flex flex-col justify-between">
             <div className="flex justify-between items-center mb-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100">
@@ -45,17 +47,16 @@ export default function SubscriptionTab() {
                 <FaEllipsisV />
               </button>
             </div>
-            <div className="text-2xl font-bold text-black mb-1">{subscriptionSummary.overdueCount}</div>
+            <div className="text-2xl font-bold text-black mb-1">{subscription?.current_enrollments ?? "—"}</div>
             <div className="flex items-center justify-between text-gray-500 text-sm">
-              <span>No. of overdue subscriptions</span>
+              <span>Current enrollments</span>
               <span className="bg-red-100 text-red-500 rounded-md px-2 py-1 ml-2 text-xs font-semibold">
-                {subscriptionSummary.overduePercent} of total
+                {subscription?.capacity ?? "—"} capacity
               </span>
             </div>
           </div>
         </div>
       </div>
-      {/* Billing History Section */}
       <div className="rounded-md border border-gray-200 bg-white px-6 py-4 mb-6">
         <div className="flex items-center justify-between mb-4">
           <span className="text-black font-semibold text-base">Billing History</span>
@@ -64,7 +65,6 @@ export default function SubscriptionTab() {
             Download
           </button>
         </div>
-        {/* Billing Table */}
         <table className="min-w-full divide-y divide-gray-200">
           <thead>
             <tr className="bg-gray-50">
@@ -75,14 +75,14 @@ export default function SubscriptionTab() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
-            {billingHistory.map((bill) => (
+            {billing?.map((bill) => (
               <tr key={bill.id} className="hover:bg-gray-50 cursor-pointer">
                 <td className="px-4 py-3 text-sm text-gray-500">{bill.invoice}</td>
                 <td className="px-4 py-3 text-sm text-gray-500">{bill.amount}</td>
                 <td className="px-4 py-3 text-sm text-gray-500">{bill.date} By, {bill.by}</td>
                 <td className="px-4 py-3 flex items-center gap-2 text-sm text-gray-500">
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  <span className="text-green-600 font-semibold text-xs">{bill.status}</span>
+                  <span className={`w-2 h-2 rounded-full ${bill.status === "Paid" ? "bg-green-500" : "bg-red-500"}`}></span>
+                  <span className={`font-semibold text-xs ${bill.status === "Paid" ? "text-green-600" : "text-red-600"}`}>{bill.status}</span>
                 </td>
               </tr>
             ))}

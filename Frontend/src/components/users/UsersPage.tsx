@@ -22,6 +22,7 @@ const ROLE_DISPLAY_MAP: Record<string, string> = {
   instructor: "Instructor",
   parent: "Parent",
   child: "Student",
+  student: "Student",
 };
 
 const TABS = [
@@ -104,10 +105,12 @@ const router = useRouter();
   }, [activeFilter, customRange]);
 
   // Filtered users for current tab
-  const filteredUsers =
-    activeTab === "all"
-      ? users
-      : users.filter((u) => u.role === activeTab);
+ const filteredUsers =
+  activeTab === "all"
+    ? users
+    : activeTab === "student"
+      ? users.filter((u) => ["student", "child"].includes((u.role || "").toLowerCase()))
+      : users.filter((u) => (u.role || "").toLowerCase() === activeTab);
 
   // Filtered users for current page
   const pagedUsers = filteredUsers.slice((page - 1) * rowsPerPage, page * rowsPerPage);
@@ -124,27 +127,25 @@ const router = useRouter();
       : users.filter((u) => u.role === type).length;
       
  const handleUserClick = (user: any) => {
-  // Route based on user role
-  if (user.role === "admin") {
+    if ((user.role || "").toLowerCase() === "admin") {
     router.push(`/dashboard/users/school-admin/${user.id}`);
-  } else if (user.role === "instructor") {
+  } else if ((user.role || "").toLowerCase() === "instructor") {
     router.push(`/dashboard/users/instructor/${user.id}`);
-  } else if (user.role === "parent") {
+  } else if ((user.role || "").toLowerCase() === "parent") {
     router.push(`/dashboard/users/parent/${user.id}`);
-  } else if (user.role === "student" || user.role === "child") {
+  } else if (["student", "child"].includes((user.role || "").toLowerCase())) {
     router.push(`/dashboard/users/student/${user.id}`);
   } else {
-    // fallback
     router.push(`/dashboard/users/${user.id}`);
   }
 };
 
 
   // Counts for summary
-  const adminCount = users.filter(u => u.role === "admin").length;
-  const instructorCount = users.filter(u => u.role === "instructor").length;
-  const parentCount = users.filter(u => u.role === "parent").length;
-  const studentCount = users.filter(u => u.role === "student").length;
+  const adminCount = users.filter(u => (u.role || "").toLowerCase() === "admin").length;
+const instructorCount = users.filter(u => (u.role || "").toLowerCase() === "instructor").length;
+const parentCount = users.filter(u => (u.role || "").toLowerCase() === "parent").length;
+const studentCount = users.filter(u => ["student", "child"].includes((u.role || "").toLowerCase())).length;
 
   // Calendar logic
   const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
@@ -467,25 +468,28 @@ const router = useRouter();
             <span>Create New</span>
           </button>
           {/* Export Button */}
-          <button
-            ref={exportBtnRef}
-            className="flex items-center gap-2 bg-white border cursor-pointer border-red-600 text-red-600 rounded-md px-4 py-2 font-medium shadow hover:bg-red-50 transition"
-            onClick={() => setShowExportModal((prev) => !prev)}
-          >
-            <FaDownload className="text-red-600" />
-            Export
-          </button>
-          {showExportModal && (
-            <>
-              {/* Overlay to close modal when clicking outside */}
-              <div
-                className="fixed inset-0 z-40"
-                style={{ background: "transparent" }}
-                onClick={() => setShowExportModal(false)}
-              />
-              <ExportModal onClose={() => setShowExportModal(false)} />
-            </>
-          )}
+         <button
+  className="flex items-center gap-2 bg-white border cursor-pointer border-red-600 text-red-600 rounded-md px-4 py-2 font-medium shadow hover:bg-red-50 transition"
+  onClick={() => setShowExportModal((prev) => !prev)}
+>
+  <FaDownload className="text-red-600" />
+  Export
+</button>
+{showExportModal && (
+  <>
+    {/* Overlay to close modal when clicking outside */}
+    <div
+      className="fixed inset-0 z-40"
+      style={{ background: "transparent" }}
+      onClick={() => setShowExportModal(false)}
+    />
+    <ExportModal
+      onClose={() => setShowExportModal(false)}
+      // filters={yourFiltersObject} 
+      includeAll={true}
+    />
+  </>
+)}
         </div>
       </div>
       {/* Table/Grid or Empty State */}

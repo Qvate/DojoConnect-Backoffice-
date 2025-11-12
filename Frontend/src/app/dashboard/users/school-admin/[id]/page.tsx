@@ -1,19 +1,19 @@
 'use client'
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from 'next/navigation'
-import MainLayout from '@/components/Dashboard/MainLayout'
-import ProfileHeader from "@/components/users/AdminProfile/ProfileHeader"
-import ProfileTabs from "@/components/users/AdminProfile/ProfileTabs"
-import ProfileOverview from "@/components/users/AdminProfile/Overview"
-import InstructorsTab from "@/components/users/AdminProfile/InstructorsTab"
-import ClassesTab from "@/components/users/AdminProfile/ClassesTab"
-import ParentsTab from "@/components/users/AdminProfile/ParentsTab"
-import StudentsTab from "@/components/users/AdminProfile/StudentsTab"
-import SubscriptionTab from "@/components/users/AdminProfile/SubscriptionTab"
-import SubscriptionSummary from "@/components/users/AdminProfile/SubscriptionSummary"
-import PaymentMethod from "@/components/users/AdminProfile/PaymentMethod";
-import ActivitiesTab from "@/components/users/AdminProfile/ActivitiesTab" 
-import Calendar from "@/components/users/AdminProfile/Calendar"
+import MainLayout from '../../../../../components/Dashboard/MainLayout'
+import ProfileHeader from "../../../../../components/users/AdminProfile/ProfileHeader"
+import ProfileTabs from "../../../../../components/users/AdminProfile/ProfileTabs"
+import ProfileOverview from "../../../../../components/users/AdminProfile/Overview"
+import InstructorsTab from "../../../../../components/users/AdminProfile/InstructorsTab"
+import ClassesTab from "../../../../../components/users/AdminProfile/ClassesTab"
+import ParentsTab from "../../../../../components/users/AdminProfile/ParentsTab"
+import StudentsTab from "../../../../../components/users/AdminProfile/StudentsTab"
+import SubscriptionTab from "../../../../../components/users/AdminProfile/SubscriptionTab"
+import SubscriptionSummary from "../../../../../components/users/AdminProfile/SubscriptionSummary"
+import PaymentMethod from "../../../../../components/users/AdminProfile/PaymentMethod";
+import ActivitiesTab from "../../../../../components/users/AdminProfile/ActivitiesTab" 
+import Calendar from "../../../../../components/users/AdminProfile/Calendar"
 
 const tabs = [
   "Overview",
@@ -35,31 +35,43 @@ export default function AdminProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProfile() {
       setLoading(true);
-      if (typeof id === "undefined") {
+      setError(null);
+      if (!id) {
         setProfile(null);
         setLoading(false);
+        setError("No user ID provided.");
         return;
       }
-      let email = await getEmailById(id as string | string[]);
-      if (!email) {
+      try {
+        // Get email by id
+        const resUsers = await fetch("https://www.backoffice-api.dojoconnect.app/get_users");
+        if (!resUsers.ok) throw new Error("Failed to fetch users");
+        const usersData = await resUsers.json();
+        const user = usersData.data.find((u: any) => String(u.id) === String(id));
+        if (!user?.email) {
+          setProfile(null);
+          setEmail(null);
+          setLoading(false);
+          setError("User not found.");
+          return;
+        }
+        setEmail(user.email);
+
+        // Get detailed profile (role-specific)
+        const resProfile = await fetch(`https://apis.dojoconnect.app/user_profile_detailed/${user.email}`);
+        if (!resProfile.ok) throw new Error("Profile not found for this email.");
+        const profileData = await resProfile.json();
+        setProfile(profileData.data);
+      } catch (err: any) {
+        setError(err.message || "An error occurred.");
         setProfile(null);
-        setLoading(false);
-        return;
-      }
-      const res = await fetch("https://backoffice-api.dojoconnect.app/user_profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setProfile(data.user);
-      } else {
-        setProfile(null);
+        setEmail(null);
       }
       setLoading(false);
     }
@@ -67,8 +79,10 @@ export default function AdminProfilePage() {
   }, [id]);
 
   if (loading) return <MainLayout><div>Loading...</div></MainLayout>;
-  if (!profile) return <MainLayout><div>User not found</div></MainLayout>;
-  if (profile.role !== "admin") return <MainLayout><div>Not an Admin profile</div></MainLayout>;
+  if (!profile) return <MainLayout><div>{error}</div></MainLayout>;
+  if ((profile.role || profile.userType) !== "admin") {
+    return <MainLayout><div>Not an Admin profile</div></MainLayout>;
+  }
 
   return (
     <MainLayout>
@@ -76,19 +90,29 @@ export default function AdminProfilePage() {
         <ProfileHeader profile={profile} onBack={() => router.push('/dashboard?tab=users')} />
         <ProfileTabs tabs={[...tabs]} activeTab={activeTab} setActiveTab={setActiveTab} />
         {activeTab === "Overview" && <ProfileOverview profile={profile} />}
-        {activeTab === "Instructors" && <InstructorsTab instructors={profile.instructors || []} />}
-        {activeTab === "Classes" && <ClassesTab email={profile.email} />}
-        {activeTab === "Parents" && <ParentsTab />}
-        {activeTab === "Students" && <StudentsTab />}
-        {activeTab === "Calendar" && <Calendar />}
+        {activeTab === "Instructors" && (
+          <InstructorsTab instructors={profile.overview_metrics?.total_instructors || 0} />
+        )}
+        {activeTab === "Classes" && (
+          <ClassesTab classes={profile.owned_classes || []} />
+        )}
+        {activeTab === "Parents" && (
+          <ParentsTab parents={profile.overview_metrics?.total_parents || 0} />
+        )}
+        {activeTab === "Students" && (
+          <StudentsTab students={profile.overview_metrics?.total_students || 0} />
+        )}
+        {activeTab === "Calendar" && (
+          <Calendar events={profile.calendars || []} />
+        )}
         {activeTab === "Subscription" && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
               <div className="h-full flex flex-col">
-                <SubscriptionSummary />
+                <SubscriptionSummary summary={profile.subscription || null} />
               </div>
               <div className="h-full flex flex-col">
-                <PaymentMethod />
+                <PaymentMethod method={profile.payment_method || null} />
               </div>
             </div>
             <div className="mt-8">
@@ -107,15 +131,10 @@ export default function AdminProfilePage() {
             </div>
           </>
         )}
-        {activeTab === "Activities" && <ActivitiesTab />}
+        {activeTab === "Activities" && (
+          <ActivitiesTab activities={profile.activities || []} />
+        )}
       </div>
     </MainLayout>
   );
-}
-
-async function getEmailById(id: string | string[]) {
-  const res = await fetch("https://backoffice-api.dojoconnect.app/get_users");
-  const data = await res.json();
-  const user = data.data.find((u: any) => String(u.id) === String(id));
-  return user?.email || null;
 }

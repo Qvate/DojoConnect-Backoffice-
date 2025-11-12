@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import SearchActionBar from "@/components/users/InstructorProfile/SearchActionBar";
-import Pagination from "@/components/users/InstructorProfile/Pagination";
+import SearchActionBar from "../users/InstructorProfile/SearchActionBar";
+import Pagination from "../users/InstructorProfile/Pagination";
 import FeedbackModal from "./FeedbackModal";
 
 export default function FeedbackPage() {

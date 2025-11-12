@@ -2,31 +2,15 @@ import React, { useState } from "react";
 import { FaUser, FaEnvelope, FaCopy, FaCalendarAlt } from "react-icons/fa";
 
 interface ProfileOverviewProps {
-  profile: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    avatar?: string | null;
-    city?: string | null;
-    street?: string | null;
-    subscription_status?: string;
-    referral_code?: string;
-    created_at?: string;
-    instructors?: number;
-    activeStudents?: number;
-    runningClasses?: number;
-    avgAttendance?: string;
-    dojoName?: string;
-    currentPlan?: string;
-    paymentStatus?: string;
-    subscriptionRenewal?: string;
-    accountStatus?: string;
-    // Add any other fields you expect from backend
-  };
+  profile: any;
 }
 
 const ProfileOverview: React.FC<ProfileOverviewProps> = ({ profile }) => {
+  const instructors = profile.overview_metrics?.total_instructors ?? profile.total_instructors ?? profile.instructors ?? 0;
+  const activeStudents = profile.overview_metrics?.total_students ?? profile.total_students ?? profile.activeStudents ?? 0;
+  const runningClasses = profile.overview_metrics?.total_classes ?? profile.total_classes ?? profile.runningClasses ?? 0;
+  const avgAttendance = profile.overview_metrics?.avg_attendance ?? profile.avgAttendance ?? "-";
+
   const [showActions, setShowActions] = useState(false);
   const [modal, setModal] = useState<null | "deactivate" | "export" | "delete" | "status">(null);
   const initialStatus = (profile.status || profile.accountStatus || "active").toLowerCase();
@@ -316,13 +300,13 @@ const [profileStatus, setProfileStatus] = useState<"active" | "inactive" | "disa
             </div>
           </div>
         </div>
-        {/* Stats Cards Section */}
+         {/* Stats Cards Section */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Instructors */}
           <div className="bg-white border border-gray-200 rounded-md p-4 flex flex-col justify-between">
             <div className="text-gray-500 text-sm">Number of Instructors</div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-black text-xl font-bold">{fallback(profile.instructors, "0")}</span>
+              <span className="text-black text-xl font-bold">{instructors}</span>
               <button className="text-green-600 text-xs font-semibold hover:underline">View list</button>
             </div>
           </div>
@@ -330,7 +314,7 @@ const [profileStatus, setProfileStatus] = useState<"active" | "inactive" | "disa
           <div className="bg-white border border-gray-200 rounded-md p-4 flex flex-col justify-between">
             <div className="text-gray-500 text-sm">Total Active Students</div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-black text-xl font-bold">{fallback(profile.activeStudents, "0")}</span>
+              <span className="text-black text-xl font-bold">{activeStudents}</span>
               <button className="text-green-600 text-xs font-semibold hover:underline">View list</button>
             </div>
           </div>
@@ -338,7 +322,7 @@ const [profileStatus, setProfileStatus] = useState<"active" | "inactive" | "disa
           <div className="bg-white border border-gray-200 rounded-md p-4 flex flex-col justify-between">
             <div className="text-gray-500 text-sm">Total Classes Running</div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-black text-xl font-bold">{fallback(profile.runningClasses, "0")}</span>
+              <span className="text-black text-xl font-bold">{runningClasses}</span>
               <button className="text-green-600 text-xs font-semibold hover:underline">View list</button>
             </div>
           </div>
@@ -346,12 +330,11 @@ const [profileStatus, setProfileStatus] = useState<"active" | "inactive" | "disa
           <div className="bg-white border border-gray-200 rounded-md p-4 flex flex-col justify-between">
             <div className="text-gray-500 text-sm">Average Attendance Rate</div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-black text-xl font-bold">{fallback(profile.avgAttendance, "0%")}</span>
+              <span className="text-black text-xl font-bold">{avgAttendance}</span>
             </div>
           </div>
         </div>
       </div>
-
       {/* Deactivate Modal */}
       {modal === "deactivate" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.03)" }}>

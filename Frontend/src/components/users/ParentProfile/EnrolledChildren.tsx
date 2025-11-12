@@ -1,9 +1,7 @@
 import { FaEllipsisV } from 'react-icons/fa';
 
-// Replace this with your real data source
-const childrenData = []; // Example: [{ name: 'Jane Doe', email: 'jane@gmail.com', img: '/users/childImg/child1.jpg' }]
 
-export default function EnrolledChildren() {
+export default function EnrolledChildren({ childrenData }) {
   const hasChildren = childrenData.length > 0;
 
   return (

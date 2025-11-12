@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaUser, FaChevronDown, FaExclamationCircle, FaExclamationTriangle } from "react-icons/fa";
+import { FaUser, FaChevronDown, FaExclamationCircle } from "react-icons/fa";
 import { FaRegSquare } from "react-icons/fa6";
 import { FaEllipsisV } from "react-icons/fa";
 
@@ -8,66 +8,71 @@ const months = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-const attendanceStats = [
-  {
-    icon: <FaUser className="text-green-600 bg-green-100 rounded-full p-2 w-8 h-8" />,
-    days: 19,
-    label: "Present",
-    iconRight: <FaExclamationCircle className="text-gray-200 bg-white-200 w-5 h-5" />,
-    color: "text-green-600",
-    bg: "bg-green-100"
-  },
-  {
-    icon: <FaUser className="text-red-500 bg-red-100 rounded-full p-2 w-8 h-8" />,
-    days: 3,
-    label: "Absent",
-    iconRight: <FaExclamationCircle className="text-gray-200 bg-white-200 w-5 h-5" />,
-    color: "text-red-500",
-    bg: "bg-red-100"
-  },
-  {
-    icon: <FaRegSquare className="text-yellow-500 bg-yellow-100 rounded p-2 w-8 h-8" />,
-    days: 1,
-    label: "Lateness",
-    color: "text-yellow-500",
-    bg: "bg-yellow-100",
-    percent: "22%"
-  }
-];
+interface AttendanceStat {
+  icon: JSX.Element;
+  days: number;
+  label: string;
+  iconRight?: JSX.Element;
+  color?: string;
+  bg?: string;
+  percent?: string;
+}
 
-const classes = [
-  {
-    id: 1,
-    classImg: "/classImage.png",
-    className: "Taekwondo",
-    totalSessions: "8 out of 12",
-    avgAttendance: "67%",
-    enrollmentDate: "June 30, 2024",
-    status: "Active"
-  },
-  {
-    id: 2,
-    classImg: "/classImage.png",
-    className: "Taekwondo",
-    totalSessions: "6 out of 12",
-    avgAttendance: "50%",
-    enrollmentDate: "July 15, 2024",
-    status: "Active"
-  },
-  {
-    id: 3,
-    classImg: "/classImage.png",
-    className: "Taekwondo",
-    totalSessions: "4 out of 12",
-    avgAttendance: "33%",
-    enrollmentDate: "August 1, 2024",
-    status: "Active"
-  }
-];
+interface ClassSummary {
+  id: number | string;
+  classImg?: string;
+  className: string;
+  totalSessions: string;
+  avgAttendance: string;
+  enrollmentDate: string;
+  status: string;
+}
 
-export default function AttendanceSummaryTab() {
+interface AttendanceSummaryProps {
+  summary?: {
+    present?: number;
+    absent?: number;
+    lateness?: number;
+    lateness_percent?: string;
+    [key: string]: any;
+  };
+  classes?: ClassSummary[];
+}
+
+export default function AttendanceSummaryTab({
+  summary = {},
+  classes = [],
+}: AttendanceSummaryProps) {
   const [selectedMonth, setSelectedMonth] = useState("June");
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // Build stats from backend summary or fallback to 0
+  const attendanceStats: AttendanceStat[] = [
+    {
+      icon: <FaUser className="text-green-600 bg-green-100 rounded-full p-2 w-8 h-8" />,
+      days: summary.present ?? 0,
+      label: "Present",
+      iconRight: <FaExclamationCircle className="text-gray-200 bg-white-200 w-5 h-5" />,
+      color: "text-green-600",
+      bg: "bg-green-100",
+    },
+    {
+      icon: <FaUser className="text-red-500 bg-red-100 rounded-full p-2 w-8 h-8" />,
+      days: summary.absent ?? 0,
+      label: "Absent",
+      iconRight: <FaExclamationCircle className="text-gray-200 bg-white-200 w-5 h-5" />,
+      color: "text-red-500",
+      bg: "bg-red-100",
+    },
+    {
+      icon: <FaRegSquare className="text-yellow-500 bg-yellow-100 rounded p-2 w-8 h-8" />,
+      days: summary.lateness ?? 0,
+      label: "Lateness",
+      color: "text-yellow-500",
+      bg: "bg-yellow-100",
+      percent: summary.lateness_percent ?? "0%",
+    },
+  ];
 
   return (
     <div className="bg-white rounded-md border border-gray-200 p-4">
@@ -126,45 +131,49 @@ export default function AttendanceSummaryTab() {
       </div>
       {/* Classes Table */}
       <div className="overflow-x-auto">
-        <table className="w-full bg-white">
-          <thead>
-            <tr className="bg-white border-b border-gray-300">
-              <th className="p-3 text-left text-black-200">
-                <input type="checkbox" />
-              </th>
-              <th className="p-3 text-left text-black-200">Class Name</th>
-              <th className="p-3 text-left text-black-200">Total Sessions</th>
-              <th className="p-3 text-left text-black-200">Avg Attendance</th>
-              <th className="p-3 text-left text-black-200">Enrollment Date</th>
-              <th className="p-3 text-left text-black-200">Status</th>
-              <th className="p-3 text-left text-black-200"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {classes.map((cls) => (
-              <tr key={cls.id} className="border-b border-gray-300 last:border-b-0 hover:bg-gray-50 cursor-pointer">
-                <td className="p-3">
+        {classes.length === 0 ? (
+          <div className="text-center text-gray-400 py-12">No class attendance records found.</div>
+        ) : (
+          <table className="w-full bg-white">
+            <thead>
+              <tr className="bg-white border-b border-gray-300">
+                <th className="p-3 text-left text-black-200">
                   <input type="checkbox" />
-                </td>
-                <td className="p-3 flex items-center gap-2">
-                  <img src={cls.classImg} alt={cls.className} className="w-8 h-8 rounded-full" />
-                  <span>{cls.className}</span>
-                </td>
-                <td className="p-3">{cls.totalSessions}</td>
-                <td className="p-3">{cls.avgAttendance}</td>
-                <td className="p-3">{cls.enrollmentDate}</td>
-                <td className="p-3">
-                  <span className="rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-600">
-                    {cls.status}
-                  </span>
-                </td>
-                <td className="p-3">
-                  <FaEllipsisV className="bg-white border border-gray-300 rounded-md p-1 w-6 h-6 text-gray-400 cursor-pointer" />
-                </td>
+                </th>
+                <th className="p-3 text-left text-black-200">Class Name</th>
+                <th className="p-3 text-left text-black-200">Total Sessions</th>
+                <th className="p-3 text-left text-black-200">Avg Attendance</th>
+                <th className="p-3 text-left text-black-200">Enrollment Date</th>
+                <th className="p-3 text-left text-black-200">Status</th>
+                <th className="p-3 text-left text-black-200"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {classes.map((cls) => (
+                <tr key={cls.id} className="border-b border-gray-300 last:border-b-0 hover:bg-gray-50 cursor-pointer">
+                  <td className="p-3">
+                    <input type="checkbox" />
+                  </td>
+                  <td className="p-3 flex items-center gap-2">
+                    <img src={cls.classImg || "/classImage.png"} alt={cls.className} className="w-8 h-8 rounded-full" />
+                    <span>{cls.className}</span>
+                  </td>
+                  <td className="p-3">{cls.totalSessions}</td>
+                  <td className="p-3">{cls.avgAttendance}</td>
+                  <td className="p-3">{cls.enrollmentDate}</td>
+                  <td className="p-3">
+                    <span className="rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-600">
+                      {cls.status}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <FaEllipsisV className="bg-white border border-gray-300 rounded-md p-1 w-6 h-6 text-gray-400 cursor-pointer" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

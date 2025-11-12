@@ -8,12 +8,6 @@ const statusStyles: Record<string, string> = {
   "payment overdue": "bg-red-600 text-white",
   "class completed": "bg-yellow-400 text-white",
 };
-const statusLabelMap: Record<string, string> = {
-  active: "Active",
-  inactive: "Inactive",
-  disabled: "Disabled",
-  draft: "In Draft",
-};
 
 export default function ProfileHeader({ 
   profile,
@@ -24,7 +18,6 @@ export default function ProfileHeader({
 }) {
   return (
     <>
-      {/* Go Back Button and Breadcrumb */}
       <div className="flex flex-nowrap items-center gap-2 sm:gap-4 mb-6">
         <button
           onClick={onBack}
@@ -42,7 +35,6 @@ export default function ProfileHeader({
         <span className="text-gray-400 mx-1 sm:mx-2 text-[11px] sm:text-sm">/</span>
         <span className="text-red-600 text-[11px] sm:text-sm font-semibold whitespace-nowrap">User Profile</span>
       </div>
-      {/* Profile Info */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3 sm:gap-6">
           <img

@@ -1,7 +1,6 @@
-import { activities } from "./ActivitiesData";
 import { FaEllipsisV } from "react-icons/fa";
 
-export default function ActivitiesTable() {
+export default function ActivitiesTable({ activities }: { activities: any[] }) {
   return (
     <div className="rounded-md border border-gray-200 bg-white px-6 py-4">
       <table className="min-w-full divide-y divide-gray-200">
@@ -22,7 +21,7 @@ export default function ActivitiesTable() {
               <td className="px-4 py-3 text-right">
                 <span className="flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white">
                   <FaEllipsisV className="text-gray-400" />
-                  </span>
+                </span>
               </td>
             </tr>
           ))}

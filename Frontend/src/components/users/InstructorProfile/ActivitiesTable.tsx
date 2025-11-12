@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaEllipsisV } from "react-icons/fa";
-import SearchActionBar from "@/components/users/InstructorProfile/SearchActionBar";
-import Pagination from "@/components/users/InstructorProfile/Pagination";
+import SearchActionBar from "./SearchActionBar";
+import Pagination from "./Pagination";
 
 export default function ActivitiesTable({ activitiesList }: { activitiesList: any[] }) {
   const [page, setPage] = useState(1);
@@ -38,12 +38,12 @@ export default function ActivitiesTable({ activitiesList }: { activitiesList: an
                 </tr>
               </thead>
               <tbody>
-                {pagedActivities.map((act) => (
-                  <tr key={act.id} className="border-b">
-                    <td className="p-3">{act.type}</td>
-                    <td className="p-3">{act.description}</td>
-                    <td className="p-3">{act.date}</td>
-                    <td className="p-3">{act.time}</td>
+                {pagedActivities.map((act, idx) => (
+                  <tr key={act.id || idx} className="border-b">
+                    <td className="p-3">{act.type || act.title || "-"}</td>
+                    <td className="p-3">{act.description || "-"}</td>
+                    <td className="p-3">{act.date || "-"}</td>
+                    <td className="p-3">{act.time || "-"}</td>
                     <td className="p-3 text-center">
                       <div className="flex justify-center items-center gap-2">
                         <FaEllipsisV className="border border-gray-300 rounded-md p-1 bg-white text-gray-400" />
