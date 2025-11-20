@@ -11,7 +11,8 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "baseUrl": ".",           
+    "jsx": "react-jsx",        
     "incremental": true,
     "plugins": [
       {
@@ -19,9 +20,16 @@
       }
     ],
     "paths": {
-      "@/*": ["DojoConnect-Backoffice-/Frontend/src/*"]
+      "@/*": ["src/*"]          
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "DojoConnect-Backoffice-/Frontend/src/components/Dashboard/dashboardData.js", "DojoConnect-Backoffice-/Frontend/src/components/revenue/revenueData.tsx"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/components/Dashboard/dashboardData.js",
+    "src/components/revenue/revenueData.tsx"
+  ],
   "exclude": ["node_modules"]
 }

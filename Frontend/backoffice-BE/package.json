@@ -1,0 +1,23 @@
+{
+  "name": "trial-dojo-api",
+  "version": "1.0.0",
+  "description": "Trial class schedule API (Node.js + MySQL, cPanel friendly)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "mysql2": "^3.14.3",
+    "nodemailer": "^7.0.6",
+    "zod": "^3.23.8",
+    "csv-writer": "^1.6.0",
+    "exceljs": "^4.3.0",
+    "pdfkit": "^0.13.0"
+  
+  }
+}
