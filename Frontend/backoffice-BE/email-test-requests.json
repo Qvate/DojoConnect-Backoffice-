@@ -1,0 +1,233 @@
+{
+  "description": "Test request bodies for all email endpoints",
+  
+  "1_test_email": {
+    "endpoint": "POST /test-email",
+    "description": "Basic test email to verify email configuration",
+    "request_body": {
+      "email": "parent@example.com"
+    }
+  },
+
+  "2_appointment_request_confirmation": {
+    "endpoint": "POST /appointment-requests",
+    "description": "Creates appointment request and sends confirmation email to parent",
+    "request_body": {
+      "dojo_tag": "your_dojo_tag_here",
+      "dojo_email": "dojo@example.com",
+      "parent_name": "Sarah Johnson",
+      "email_address": "sarah.johnson@example.com",
+      "contact_details": "+1-555-0123",
+      "reason_for_consultation": "Interested in enrolling my child in karate classes",
+      "preferred_contact_method": "email",
+      "preferred_time_range": "Morning",
+      "number_of_children": 2,
+      "additional_notes": "My children are 7 and 9 years old",
+      "consent_acknowledged": true,
+      "appointment_type": "Physical",
+      "status": "pending"
+    },
+    "notes": "Replace 'your_dojo_tag_here' with an actual dojo_tag from your database"
+  },
+
+  "3_appointment_request_online": {
+    "endpoint": "POST /appointment-requests",
+    "description": "Creates online appointment request",
+    "request_body": {
+      "dojo_tag": "your_dojo_tag_here",
+      "dojo_email": "dojo@example.com",
+      "parent_name": "Michael Chen",
+      "email_address": "michael.chen@example.com",
+      "contact_details": "+1-555-0456",
+      "reason_for_consultation": "Want to learn about your programs",
+      "preferred_contact_method": "phone",
+      "preferred_time_range": "Afternoon",
+      "number_of_children": 1,
+      "additional_notes": "Prefer video call consultation",
+      "consent_acknowledged": true,
+      "appointment_type": "Online",
+      "status": "pending"
+    }
+  },
+
+  "4_schedule_physical_appointment": {
+    "endpoint": "POST /admin/scheduled-appointments",
+    "description": "Schedules a physical appointment and sends email",
+    "request_body": {
+      "consultation_request_id": 1,
+      "dojo_tag": "your_dojo_tag_here",
+      "scheduled_date": "2025-10-15",
+      "start_time": "10:00 AM",
+      "end_time": "11:00 AM",
+      "address_text": "123 Martial Arts Way, Downtown, CA 90210",
+      "meeting_link": null,
+      "parent_email": "sarah.johnson@example.com",
+      "parent_name": "Sarah Johnson"
+    },
+    "notes": "Replace consultation_request_id with actual ID from previous appointment request"
+  },
+
+  "5_schedule_online_appointment": {
+    "endpoint": "POST /admin/scheduled-appointments",
+    "description": "Schedules an online appointment and sends email",
+    "request_body": {
+      "consultation_request_id": 2,
+      "dojo_tag": "your_dojo_tag_here",
+      "scheduled_date": "2025-10-16",
+      "start_time": "2:00 PM",
+      "end_time": "3:00 PM",
+      "address_text": null,
+      "meeting_link": "https://meet.google.com/abc-defg-hij",
+      "parent_email": "michael.chen@example.com",
+      "parent_name": "Michael Chen"
+    },
+    "notes": "Replace consultation_request_id with actual ID. For online appointments, meeting_link is required"
+  },
+
+  "6_cancel_appointment": {
+    "endpoint": "POST /admin/cancel-appointment",
+    "description": "Cancels an appointment and sends cancellation email",
+    "request_body": {
+      "appointment_id": 1,
+      "dojo_tag": "your_dojo_tag_here"
+    },
+    "notes": "Replace appointment_id with actual scheduled appointment ID"
+  },
+
+  "7_reschedule_physical_appointment": {
+    "endpoint": "POST /admin/reschedule-appointment",
+    "description": "Reschedules a physical appointment and sends email",
+    "request_body": {
+      "appointment_id": 1,
+      "dojo_tag": "your_dojo_tag_here",
+      "new_scheduled_date": "2025-10-20",
+      "new_start_time": "11:00 AM",
+      "new_end_time": "12:00 PM",
+      "new_address_text": "456 New Dojo Street, Downtown, CA 90211",
+      "new_meeting_link": null
+    },
+    "notes": "For physical appointments, provide new_address_text"
+  },
+
+  "8_reschedule_online_appointment": {
+    "endpoint": "POST /admin/reschedule-appointment",
+    "description": "Reschedules an online appointment and sends email",
+    "request_body": {
+      "appointment_id": 2,
+      "dojo_tag": "your_dojo_tag_here",
+      "new_scheduled_date": "2025-10-18",
+      "new_start_time": "3:00 PM",
+      "new_end_time": "4:00 PM",
+      "new_address_text": null,
+      "new_meeting_link": "https://zoom.us/j/123456789"
+    },
+    "notes": "For online appointments, provide new_meeting_link"
+  },
+
+  "9_trial_class_booking": {
+    "endpoint": "POST /trial-class-bookings",
+    "description": "Creates a trial class booking and sends confirmation email",
+    "request_body": {
+      "class_id": 1,
+      "parent_name": "Jennifer Martinez",
+      "email": "your-email@example.com",
+      "phone": "+1-555-0789",
+      "appointment_date": "2025-10-25",
+      "dojo_tag": "your_dojo_tag_here",
+      "status": "pending",
+      "number_of_children": 2,
+      "class_name": "Beginner Karate",
+      "instructor_name": "Sensei John Smith",
+      "class_image": "https://example.com/karate-class.jpg",
+      "trial_fee": 25
+    },
+    "notes": "Parent receives booking confirmation with class details and what-to-bring checklist"
+  },
+
+  "testing_workflow": {
+    "description": "Recommended testing workflow",
+    "steps": [
+      {
+        "step": 1,
+        "action": "Test basic email configuration",
+        "endpoint": "POST /test-email",
+        "expected": "Receives test email successfully"
+      },
+      {
+        "step": 2,
+        "action": "Create an appointment request (Physical)",
+        "endpoint": "POST /appointment-requests",
+        "expected": "Parent receives confirmation email with appointment details"
+      },
+      {
+        "step": 3,
+        "action": "Schedule the physical appointment",
+        "endpoint": "POST /admin/scheduled-appointments",
+        "expected": "Parent receives physical appointment scheduled email with address"
+      },
+      {
+        "step": 4,
+        "action": "Reschedule the physical appointment",
+        "endpoint": "POST /admin/reschedule-appointment",
+        "expected": "Parent receives physical reschedule email with new date/location"
+      },
+      {
+        "step": 5,
+        "action": "Cancel the appointment",
+        "endpoint": "POST /admin/cancel-appointment",
+        "expected": "Parent receives cancellation email"
+      },
+      {
+        "step": 6,
+        "action": "Create an online appointment request",
+        "endpoint": "POST /appointment-requests",
+        "expected": "Parent receives confirmation email"
+      },
+      {
+        "step": 7,
+        "action": "Schedule the online appointment",
+        "endpoint": "POST /admin/scheduled-appointments",
+        "expected": "Parent receives online appointment email with meeting link"
+      },
+      {
+        "step": 8,
+        "action": "Reschedule the online appointment",
+        "endpoint": "POST /admin/reschedule-appointment",
+        "expected": "Parent receives online reschedule email with new meeting link"
+      },
+      {
+        "step": 9,
+        "action": "Create a trial class booking",
+        "endpoint": "POST /trial-class-bookings",
+        "expected": "Parent receives trial class booking confirmation with class details"
+      }
+    ]
+  },
+
+  "curl_examples": {
+    "description": "cURL commands for testing (replace YOUR_API_URL with your actual API URL)",
+    
+    "test_email": "curl -X POST http://localhost:5000/test-email -H \"Content-Type: application/json\" -d '{\"email\":\"your-email@example.com\"}'",
+    
+    "appointment_request": "curl -X POST http://localhost:5000/appointment-requests -H \"Content-Type: application/json\" -d '{\"dojo_tag\":\"your_dojo_tag\",\"dojo_email\":\"dojo@example.com\",\"parent_name\":\"Sarah Johnson\",\"email_address\":\"sarah@example.com\",\"contact_details\":\"+1-555-0123\",\"reason_for_consultation\":\"Interested in classes\",\"preferred_contact_method\":\"email\",\"preferred_time_range\":\"Morning\",\"number_of_children\":2,\"consent_acknowledged\":true,\"appointment_type\":\"Physical\"}'",
+    
+    "schedule_appointment": "curl -X POST http://localhost:5000/admin/scheduled-appointments -H \"Content-Type: application/json\" -d '{\"consultation_request_id\":1,\"dojo_tag\":\"your_dojo_tag\",\"scheduled_date\":\"2025-10-15\",\"start_time\":\"10:00 AM\",\"end_time\":\"11:00 AM\",\"address_text\":\"123 Dojo Street\",\"parent_email\":\"sarah@example.com\",\"parent_name\":\"Sarah Johnson\"}'",
+    
+    "cancel_appointment": "curl -X POST http://localhost:5000/admin/cancel-appointment -H \"Content-Type: application/json\" -d '{\"appointment_id\":1,\"dojo_tag\":\"your_dojo_tag\"}'",
+    
+    "reschedule_appointment": "curl -X POST http://localhost:5000/admin/reschedule-appointment -H \"Content-Type: application/json\" -d '{\"appointment_id\":1,\"dojo_tag\":\"your_dojo_tag\",\"new_scheduled_date\":\"2025-10-20\",\"new_start_time\":\"11:00 AM\",\"new_end_time\":\"12:00 PM\",\"new_address_text\":\"456 New Street\"}'",
+    
+    "trial_class_booking": "curl -X POST http://localhost:5000/trial-class-bookings -H \"Content-Type: application/json\" -d '{\"class_id\":1,\"parent_name\":\"Jennifer Martinez\",\"email\":\"your-email@example.com\",\"phone\":\"+1-555-0789\",\"appointment_date\":\"2025-10-25\",\"dojo_tag\":\"your_dojo_tag\",\"status\":\"pending\",\"number_of_children\":2,\"class_name\":\"Beginner Karate\",\"instructor_name\":\"Sensei John Smith\",\"trial_fee\":25}'"
+  },
+
+  "important_notes": [
+    "Replace 'your_dojo_tag_here' with an actual dojo_tag from your database",
+    "Replace 'dojo@example.com' with actual dojo owner email",
+    "Replace example parent emails with your test email address to receive the emails",
+    "For scheduled appointments, use the consultation_request_id returned from step 2",
+    "For cancel/reschedule, use the appointment_id returned from the schedule endpoint",
+    "Make sure your Zoho email configuration is correct in app.js",
+    "Check server console logs for email send confirmations"
+  ]
+}
+
