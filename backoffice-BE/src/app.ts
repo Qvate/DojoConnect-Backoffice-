@@ -12,9 +12,11 @@ import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
 
+import AppConfig from "./config/AppConfig";
+
 import { notFound } from "./middlewares/notFound.middleware";
 import { errorHandler } from "./middlewares/errorHandler.middleware";
-import AppConfig from "./config/AppConfig";
+import * as dbService from './services/db.service'
 import routes from "./routes/index";
 
 const corsOptions = {
@@ -27,16 +29,6 @@ app.use(express.json()); // bodyParser not needed
 
 /* ------------------ DB ------------------ */
 let connection;
-async function initDB() {
-  connection = await mysql.createConnection({
-    host: AppConfig.BACK_OFFICE_DB_HOST,
-    user: AppConfig.BACK_OFFICE_DB_USER,
-    password: AppConfig.BACK_OFFICE_DB_PASSWORD,
-    database: AppConfig.BACK_OFFICE_DB_NAME,
-    // timezone: 'Z', // optional: keep server-side dates in UTC
-  });
-  console.log("✅ MySQL trial_dojo connected");
-}
 
 /* ------------------ Backoffice Utilities (from combine.js) ------------------ */
 
@@ -3426,7 +3418,7 @@ app.use(errorHandler);
 /* ------------------ START ------------------ */
 (async () => {
   try {
-    await initDB(); // ✅ ensure DB is ready before listen
+    await dbService.initDB(); // ✅ ensure DB is ready before listen
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (e) {

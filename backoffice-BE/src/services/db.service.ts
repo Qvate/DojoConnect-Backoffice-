@@ -12,7 +12,7 @@ export const getDBConnection = async () => {
     return connection;
 }
 
-const  initDB = async () => {
+export const  initDB = async () => {
   connection = await mysql.createConnection({
     host: AppConfig.BACK_OFFICE_DB_HOST,
     user: AppConfig.BACK_OFFICE_DB_USER,

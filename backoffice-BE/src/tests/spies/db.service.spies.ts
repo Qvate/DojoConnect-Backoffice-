@@ -10,11 +10,16 @@ export function createDbServiceSpies() {
     .mockImplementation(jest.fn(() =>
   Promise.resolve({
     execute: mockExecute,
-  } as any)
-));
+  } as any)));
+
+  const initDbSpy = jest
+    .spyOn(dbService, "initDB")
+    .mockImplementation(jest.fn())
+
   return {
     getDbConnectionSpy,
-    mockExecute
+    mockExecute,
+    initDbSpy
   };
 }
 
