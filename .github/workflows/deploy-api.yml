@@ -3,7 +3,7 @@ name: Deploy Backoffice API to cPanel
 on:
   push:
     branches:
-      - main
+      - production
     paths:
       - "backoffice-BE/**"   # 🚀 Only deploy when backend folder changes
   workflow_dispatch:
@@ -16,10 +16,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Use Node.js 24
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
           cache: "npm"
           cache-dependency-path: backoffice-BE/package-lock.json
 
@@ -27,7 +27,11 @@ jobs:
         working-directory: backoffice-BE
         run: |
           npm install
-          npm run build || true   # optional: if you use TypeScript
+          npm run build
+      
+      - name: Run tests
+        working-directory: backoffice-BE
+        run: npm test
 
       # -----------------------------
       # 4. Preview Deployment Info
