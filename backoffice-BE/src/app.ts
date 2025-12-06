@@ -2,8 +2,7 @@ import "express-async-errors";
 import dotenv from "dotenv";
 dotenv.config();
 
-import express from "express";
-import mysql from "mysql2/promise";
+import express, { Express } from "express";
 import cors from "cors";
 import nodemailer from "nodemailer";
 import { createObjectCsvWriter } from "csv-writer";
@@ -13,22 +12,18 @@ import fs from "fs";
 import path from "path";
 
 import AppConfig from "./config/AppConfig";
-
+import * as dbService from "./services/db.service";
 import { notFound } from "./middlewares/notFound.middleware";
 import { errorHandler } from "./middlewares/errorHandler.middleware";
-import * as dbService from './services/db.service'
 import routes from "./routes/index";
 
 const corsOptions = {
   origin: "https://www.dojoconnect.app",
 };
 
-const app = express();
+const app: Express = express();
 app.use(cors(corsOptions));
 app.use(express.json()); // bodyParser not needed
-
-/* ------------------ DB ------------------ */
-let connection;
 
 /* ------------------ Backoffice Utilities (from combine.js) ------------------ */
 
@@ -181,35 +176,18 @@ async function exportToPDF(data, filename, title) {
 }
 
 // Response formatter
-function formatResponse(success: boolean, data: any = null, message: string|null = null, error: any = null) {
-  const response:any = { success };
+function formatResponse(
+  success: boolean,
+  data: any = null,
+  message: string | null = null,
+  error: any = null
+) {
+  const response: any = { success };
   if (data !== null) response.data = data;
   if (message !== null) response.message = message;
   if (error !== null) response.error = error;
   return response;
 }
-
-// Second database connection pool for backoffice features
-const combinePool = mysql.createPool({
-  host: AppConfig.MAIN_DB_HOST,
-  user: AppConfig.MAIN_DB_USER,
-  password: AppConfig.MAIN_DB_PASSWORD,
-  database: AppConfig.MAIN_DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
-
-// Test combinePool connection
-combinePool
-  .getConnection()
-  .then((connection) => {
-    console.log("✅ MySQL dojoburz_dojoconnect connected");
-    connection.release();
-  })
-  .catch((err) => {
-    console.error("❌ dojoburz_dojoconnect connection failed:", err.message);
-  });
 
 const transporter = nodemailer.createTransport({
   host: "smtp.zoho.com",
@@ -242,7 +220,8 @@ async function generateUniqueSlug(name) {
   let counter = 1;
 
   while (true) {
-    const [rows] = await connection.execute(
+    const connection = await dbService.getBackOfficeDB();
+    const [rows]: any = await connection.execute(
       "SELECT COUNT(*) as count FROM dojos WHERE slug = ?",
       [slug]
     );
@@ -263,7 +242,8 @@ async function generateUniqueDojoTag(name) {
   let counter = 1;
 
   while (true) {
-    const [rows] = await connection.execute(
+    const connection = await dbService.getBackOfficeDB();
+    const [rows]: any = await connection.execute(
       "SELECT COUNT(*) as count FROM users WHERE dojo_tag = ?",
       [tag]
     );
@@ -392,7 +372,7 @@ async function sendAppointmentRequestConfirmation(
   try {
     await transporter.sendMail(mailOptions);
     console.log(`📧 Appointment request confirmation email sent to ${to}`);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
   }
 }
@@ -497,7 +477,7 @@ async function sendOnlineAppointmentScheduled(
   try {
     await transporter.sendMail(mailOptions);
     console.log(`📧 Online appointment scheduled email sent to ${to}`);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
   }
 }
@@ -543,7 +523,7 @@ async function sendAppointmentCancellation(
   try {
     await transporter.sendMail(mailOptions);
     console.log(`📧 Appointment cancellation email sent to ${to}`);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
   }
 }
@@ -590,7 +570,7 @@ async function sendOnlineAppointmentReschedule(
   try {
     await transporter.sendMail(mailOptions);
     console.log(`📧 Online appointment reschedule email sent to ${to}`);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
   }
 }
@@ -637,7 +617,7 @@ async function sendPhysicalAppointmentReschedule(
   try {
     await transporter.sendMail(mailOptions);
     console.log(`📧 Physical appointment reschedule email sent to ${to}`);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
   }
 }
@@ -703,7 +683,7 @@ async function sendTrialClassBookingConfirmation(
   try {
     await transporter.sendMail(mailOptions);
     console.log(`📧 Trial class booking confirmation email sent to ${to}`);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
   }
 }
@@ -716,7 +696,11 @@ app.use("/api", routes);
 // Export Users
 app.post("/export/users", async (req, res) => {
   try {
-    const { format = "csv", filters = {}, include_all = true } : {format: string, filters:any, include_all: boolean}= req.body;
+    const {
+      format = "csv",
+      filters = {},
+      include_all = true,
+    }: { format: string; filters: any; include_all: boolean } = req.body;
 
     let query =
       "SELECT id, name, email, role, balance, referral_code, created_at, dob, gender, city, subscription_status FROM users WHERE 1=1";
@@ -733,7 +717,9 @@ app.post("/export/users", async (req, res) => {
       }
     }
 
-    const [users] = await combinePool.query(query, params);
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [users] = await dbConnection.query(query, params);
 
     const timestamp = Date.now();
     const filename = `users_${timestamp}`;
@@ -793,7 +779,7 @@ app.post("/export/users", async (req, res) => {
         });
       }
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Export users error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -804,7 +790,8 @@ app.get("/class_profile/:class_uid", async (req, res) => {
   try {
     const { class_uid } = req.params;
 
-    const [classInfo]: any[] = await combinePool.query(
+    const dbConnection = await dbService.getMobileApiDb();
+    const [classInfo]: any[] = await dbConnection.query(
       'SELECT * FROM classes WHERE class_uid = ? AND status != "deleted"',
       [class_uid]
     );
@@ -815,12 +802,12 @@ app.get("/class_profile/:class_uid", async (req, res) => {
     }
     const classData = classInfo[0];
 
-    const [schedule] = await combinePool.query(
+    const [schedule] = await dbConnection.query(
       "SELECT * FROM class_schedule WHERE class_id = ?",
       [classData.id]
     );
 
-    const [enrolledStudents] = await combinePool.query(
+    const [enrolledStudents] = await dbConnection.query(
       `
       SELECT s.id, s.full_name, s.email, s.class_id, s.added_by, s.created_at,
              e.enrollment_id, e.parent_email, u.name as parent_name
@@ -832,7 +819,7 @@ app.get("/class_profile/:class_uid", async (req, res) => {
       [class_uid, class_uid]
     );
 
-    const [attendanceSummary] = await combinePool.query(
+    const [attendanceSummary] = await dbConnection.query(
       `
       SELECT 
         COUNT(*) as total_records,
@@ -845,7 +832,7 @@ app.get("/class_profile/:class_uid", async (req, res) => {
       [class_uid]
     );
 
-    const [recentAttendance] = await combinePool.query(
+    const [recentAttendance] = await dbConnection.query(
       `
       SELECT a.*, u.name as student_name
       FROM attendance_records a
@@ -857,12 +844,12 @@ app.get("/class_profile/:class_uid", async (req, res) => {
       [class_uid]
     );
 
-    const [enrollmentCount] = await combinePool.query(
+    const [enrollmentCount] = await dbConnection.query(
       "SELECT COUNT(*) as count FROM enrollments WHERE class_id = ?",
       [class_uid]
     );
 
-    const [recentActivities] = await combinePool.query(
+    const [recentActivities] = await dbConnection.query(
       `
       SELECT e.enrollment_id, e.parent_email, e.created_at, u.name as parent_name,
              'enrollment' as activity_type
@@ -895,7 +882,7 @@ app.get("/class_profile/:class_uid", async (req, res) => {
     res.json(
       formatResponse(true, response, "Class profile retrieved successfully")
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Class profile error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -905,7 +892,9 @@ app.get("/class_profile/:class_uid", async (req, res) => {
 app.get("/user_profile_detailed/:email", async (req, res) => {
   try {
     const { email } = req.params;
-    const [users]: any[] = await combinePool.query(
+
+    const dbConnection = await dbService.getMobileApiDb();
+    const [users]: any[] = await dbConnection.query(
       "SELECT * FROM users WHERE email = ?",
       [email]
     );
@@ -919,7 +908,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
 
     switch (user.role) {
       case "parent": {
-        const [enrolledChildren] = await combinePool.query(
+        const [enrolledChildren] = await dbConnection.query(
           `
           SELECT DISTINCT s.id, s.full_name, s.email, s.class_id, s.created_at
           FROM students s
@@ -928,7 +917,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
           [email]
         );
 
-        const [enrolledClasses] = await combinePool.query(
+        const [enrolledClasses] = await dbConnection.query(
           `
           SELECT c.*, e.enrollment_id, e.created_at as enrolled_at
           FROM enrollments e
@@ -938,7 +927,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
           [email]
         );
 
-        const [subscriptions] = await combinePool.query(
+        const [subscriptions] = await dbConnection.query(
           `
           SELECT cs.*, e.enrollment_id, c.class_name
           FROM children_subscription cs
@@ -949,7 +938,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
           [email]
         );
 
-        const [activities] = await combinePool.query(
+        const [activities] = await dbConnection.query(
           `
           SELECT 'enrollment' as type, created_at, enrollment_id as reference
           FROM enrollments WHERE parent_email = ?
@@ -976,7 +965,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
         break;
       }
       case "child": {
-        const [studentClasses] = await combinePool.query(
+        const [studentClasses] = await dbConnection.query(
           `
           SELECT c.*, s.created_at as enrolled_at
           FROM students s
@@ -986,7 +975,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
           [email]
         );
 
-        const [attendanceSummary] = await combinePool.query(
+        const [attendanceSummary] = await dbConnection.query(
           `
           SELECT 
             COUNT(*) as total_sessions,
@@ -1000,7 +989,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
           [email]
         );
 
-        const [recentSessions] = await combinePool.query(
+        const [recentSessions] = await dbConnection.query(
           `
           SELECT a.*, c.class_name
           FROM attendance_records a
@@ -1012,7 +1001,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
           [email]
         );
 
-        const [studentActivities] = await combinePool.query(
+        const [studentActivities] = await dbConnection.query(
           `
           SELECT 'attendance' as type, attendance_date as date, status as details, class_id
           FROM attendance_records
@@ -1033,7 +1022,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
         break;
       }
       case "instructor": {
-        const [assignedClasses] = await combinePool.query(
+        const [assignedClasses] = await dbConnection.query(
           `
           SELECT c.*
           FROM classes c
@@ -1042,7 +1031,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
           [email]
         );
 
-        const [instructorActivities] = await combinePool.query(
+        const [instructorActivities] = await dbConnection.query(
           `
           SELECT 'class_created' as type, created_at as date, class_name as details
           FROM classes
@@ -1053,7 +1042,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
           [email]
         );
 
-        const [instructorInfo] = await combinePool.query(
+        const [instructorInfo] = await dbConnection.query(
           "SELECT * FROM instructors_tbl WHERE instructor_email = ?",
           [email]
         );
@@ -1073,30 +1062,30 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
         break;
       }
       case "admin": {
-        const [instructorCount] = await combinePool.query(
+        const [instructorCount] = await dbConnection.query(
           'SELECT COUNT(*) as count FROM users WHERE role = "instructor"'
         );
-        const [parentCount] = await combinePool.query(
+        const [parentCount] = await dbConnection.query(
           'SELECT COUNT(*) as count FROM users WHERE role = "parent"'
         );
-        const [studentCount] = await combinePool.query(
+        const [studentCount] = await dbConnection.query(
           'SELECT COUNT(*) as count FROM users WHERE role = "child"'
         );
-        const [classCount] = await combinePool.query(
+        const [classCount] = await dbConnection.query(
           'SELECT COUNT(*) as count FROM classes WHERE status = "active"'
         );
 
-        const [assignedTasks] = await combinePool.query(
+        const [assignedTasks] = await dbConnection.query(
           "SELECT * FROM tasks WHERE created_by = ? ORDER BY due_date DESC LIMIT 10",
           [email]
         );
 
-        const [ownedClasses] = await combinePool.query(
+        const [ownedClasses] = await dbConnection.query(
           'SELECT * FROM classes WHERE owner_email = ? AND status = "active"',
           [email]
         );
 
-        const [events] = await combinePool.query(
+        const [events] = await dbConnection.query(
           "SELECT * FROM events WHERE created_by = ? AND event_date >= CURDATE() ORDER BY event_date ASC LIMIT 10",
           [email]
         );
@@ -1130,7 +1119,7 @@ app.get("/user_profile_detailed/:email", async (req, res) => {
     res.json(
       formatResponse(true, profileData, "User profile retrieved successfully")
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("User profile error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -1165,7 +1154,9 @@ app.post("/export/classes", async (req, res) => {
 
     query += " GROUP BY c.id";
 
-    const [classes] = await combinePool.query(query, params);
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [classes] = await dbConnection.query(query, params);
 
     const timestamp = Date.now();
     const filename = `classes_${timestamp}`;
@@ -1226,7 +1217,7 @@ app.post("/export/classes", async (req, res) => {
         });
       }
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Export classes error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -1259,7 +1250,9 @@ app.post("/export/transactions", async (req, res) => {
 
     query += " ORDER BY t.date DESC";
 
-    const [transactions] = await combinePool.query(query, params);
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [transactions] = await dbConnection.query(query, params);
 
     const timestamp = Date.now();
     const filename = `transactions_${timestamp}`;
@@ -1328,7 +1321,7 @@ app.post("/export/transactions", async (req, res) => {
         });
       }
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Export transactions error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -1366,7 +1359,9 @@ app.post("/export/attendance", async (req, res) => {
 
     query += " ORDER BY a.attendance_date DESC";
 
-    const [attendance] = await combinePool.query(query, params);
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [attendance] = await dbConnection.query(query, params);
 
     const timestamp = Date.now();
     const filename = `attendance_${timestamp}`;
@@ -1430,7 +1425,7 @@ app.post("/export/attendance", async (req, res) => {
         });
       }
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Export attendance error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -1466,7 +1461,9 @@ app.post("/export/enrollments", async (req, res) => {
 
     query += " ORDER BY e.created_at DESC";
 
-    const [enrollments] = await combinePool.query(query, params);
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [enrollments] = await dbConnection.query(query, params);
 
     const timestamp = Date.now();
     const filename = `enrollments_${timestamp}`;
@@ -1535,7 +1532,7 @@ app.post("/export/enrollments", async (req, res) => {
         });
       }
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Export enrollments error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -1572,7 +1569,8 @@ app.post("/trial-class-bookings", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const [result] = await connection.execute(
+    const connection = await dbService.getBackOfficeDB();
+    const [result]: any = await connection.execute(
       `INSERT INTO trial_class_bookings 
       (class_id, parent_name, email, phone, appointment_date, dojo_tag, status, number_of_children, class_name, instructor_name, class_image, trial_fee)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1593,7 +1591,7 @@ app.post("/trial-class-bookings", async (req, res) => {
     );
 
     // Get dojo name for email
-    const [dojoRows] = await connection.execute(
+    const [dojoRows]: any = await connection.execute(
       "SELECT dojo_name FROM users WHERE dojo_tag = ? LIMIT 1",
       [dojo_tag]
     );
@@ -1627,7 +1625,7 @@ app.post("/trial-class-bookings", async (req, res) => {
       trial_fee: trial_fee || 0,
       created_at: new Date().toISOString(),
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Error creating trial booking:", error.message);
     res.status(500).json({ error: "Failed to create trial booking" });
   }
@@ -1637,6 +1635,7 @@ app.post("/trial-class-bookings", async (req, res) => {
 app.get("/trial-class-bookings/:dojo_tag", async (req, res) => {
   try {
     const { dojo_tag } = req.params;
+    const connection = await dbService.getBackOfficeDB();
     const [rows] = await connection.execute(
       `SELECT id, class_id, parent_name, email, phone, number_of_children,
               appointment_date, payment_status, status, dojo_tag,
@@ -1648,7 +1647,7 @@ app.get("/trial-class-bookings/:dojo_tag", async (req, res) => {
       [dojo_tag]
     );
     res.json(rows);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error fetching trial bookings:", err.message);
     res.status(500).json({ error: err.message });
   }
@@ -1659,7 +1658,8 @@ app.get("/trial-class-bookings/details/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [rows] = await connection.execute(
+    const connection = await dbService.getBackOfficeDB();
+    const [rows]: any = await connection.execute(
       `SELECT id, class_id, parent_name, email, phone, appointment_date, dojo_tag,
               status, number_of_children, class_name, instructor_name, class_image, trial_fee,
               created_at, updated_at
@@ -1673,7 +1673,7 @@ app.get("/trial-class-bookings/details/:id", async (req, res) => {
     }
 
     res.json(rows[0]);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error fetching trial booking details:", err.message);
     res.status(500).json({ error: "Failed to fetch trial booking details" });
   }
@@ -1722,8 +1722,10 @@ app.post("/appointment-requests", async (req, res) => {
     const safeStatus = validStatuses.includes(status) ? status : "pending";
     const consent = !!consent_acknowledged ? 1 : 0;
 
+    const connection = await dbService.getBackOfficeDB();
+
     // Insert consultation request including dojo_email
-    const [result] = await connection.execute(
+    const [result]: any = await connection.execute(
       `INSERT INTO consultation_requests
        (dojo_tag, dojo_email, parent_name, email_address, contact_details, reason_for_consultation,
         preferred_contact_method, preferred_time_range, number_of_children,
@@ -1747,7 +1749,7 @@ app.post("/appointment-requests", async (req, res) => {
     );
 
     // Get dojo name for email
-    const [dojoRows] = await connection.execute(
+    const [dojoRows]: any = await connection.execute(
       "SELECT dojo_name FROM users WHERE dojo_tag = ? LIMIT 1",
       [dojo_tag]
     );
@@ -1797,7 +1799,7 @@ app.post("/appointment-requests", async (req, res) => {
       status: safeStatus,
       created_at: new Date().toISOString(),
     });
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error creating consultation request:", err);
     res
       .status(500)
@@ -1808,6 +1810,7 @@ app.post("/appointment-requests", async (req, res) => {
 /* ------------------ FETCH ALL APPOINTMENT REQUESTS ------------------ */
 app.get("/appointment-requests", async (_req, res) => {
   try {
+    const connection = await dbService.getBackOfficeDB();
     const [rows] = await connection.execute(
       `SELECT id, dojo_id, parent_name, email_address, contact_details, reason_for_consultation,
               preferred_contact_method, preferred_time_range, number_of_children,
@@ -1816,7 +1819,7 @@ app.get("/appointment-requests", async (_req, res) => {
        ORDER BY created_at DESC`
     );
     res.json(rows);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error fetching consultation requests:", err);
     res
       .status(500)
@@ -1827,7 +1830,8 @@ app.get("/appointment-requests", async (_req, res) => {
 /* ------------------ FETCH APPOINTMENT REQUEST BY ID ------------------ */
 app.get("/appointment-requests/:id", async (req, res) => {
   try {
-    const [rows] = await connection.execute(
+    const connection = await dbService.getBackOfficeDB();
+    const [rows]: any = await connection.execute(
       `SELECT id, dojo_id, parent_name, email_address, contact_details, reason_for_consultation,
               preferred_contact_method, preferred_time_range, number_of_children,
               additional_notes, consent_acknowledged, appointment_type, status, created_at
@@ -1841,7 +1845,7 @@ app.get("/appointment-requests/:id", async (req, res) => {
     }
 
     res.json(rows[0]);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error fetching consultation request details:", err);
     res
       .status(500)
@@ -1854,8 +1858,10 @@ app.get("/admin/appointment-requests/tag/:dojo_tag", async (req, res) => {
   try {
     const { dojo_tag } = req.params;
 
+    const connection = await dbService.getBackOfficeDB();
+
     // Get dojo_id from the dojo_tag
-    const [dojoRows] = await connection.execute(
+    const [dojoRows]: any = await connection.execute(
       "SELECT dojo_id FROM users WHERE dojo_tag = ? LIMIT 1",
       [dojo_tag]
     );
@@ -1878,7 +1884,7 @@ app.get("/admin/appointment-requests/tag/:dojo_tag", async (req, res) => {
     );
 
     res.json(rows);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error fetching consultation requests by dojo_tag:", err);
     res
       .status(500)
@@ -1916,7 +1922,8 @@ app.post("/admin/scheduled-appointments", async (req, res) => {
     const end_time_24h = convertTo24Hour(end_time);
 
     // Insert the scheduled appointment
-    const [result] = await connection.execute(
+    const connection = await dbService.getBackOfficeDB();
+    const [result]: any = await connection.execute(
       `INSERT INTO scheduled_appointments
         (consultation_request_id, dojo_tag, scheduled_date, start_time, end_time, address_text, meeting_link, parent_email, parent_name)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1942,7 +1949,7 @@ app.post("/admin/scheduled-appointments", async (req, res) => {
     );
 
     // Get appointment type and preferred contact method from consultation request
-    const [requestRows] = await connection.execute(
+    const [requestRows]: any = await connection.execute(
       `SELECT appointment_type, preferred_contact_method FROM consultation_requests WHERE id = ?`,
       [consultation_request_id]
     );
@@ -1954,7 +1961,7 @@ app.post("/admin/scheduled-appointments", async (req, res) => {
         : "email";
 
     // Get dojo name for email
-    const [dojoRows] = await connection.execute(
+    const [dojoRows]: any = await connection.execute(
       "SELECT dojo_name FROM users WHERE dojo_tag = ? LIMIT 1",
       [dojo_tag]
     );
@@ -2018,7 +2025,7 @@ app.post("/admin/scheduled-appointments", async (req, res) => {
       parent_name: parent_name || null,
       created_at: new Date().toISOString(),
     });
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error creating scheduled appointment:", err);
     res
       .status(500)
@@ -2040,7 +2047,7 @@ app.get("/admin/scheduled-appointments", async (req, res) => {
         ON sa.consultation_request_id = cr.id
     `;
 
-    const params: any[]= [];
+    const params: any[] = [];
 
     if (dojo_id) {
       query += " WHERE sa.dojo_id = ?";
@@ -2049,10 +2056,11 @@ app.get("/admin/scheduled-appointments", async (req, res) => {
 
     query += " ORDER BY sa.scheduled_date ASC, sa.start_time ASC";
 
-    const [rows] = await connection.execute(query, params);
+    const connection = await dbService.getBackOfficeDB();
+    const [rows]: any = await connection.execute(query, params);
 
     res.json(rows);
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error fetching scheduled appointments:", err);
     res
       .status(500)
@@ -2069,8 +2077,10 @@ app.post("/admin/cancel-appointment", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    const connection = await dbService.getBackOfficeDB();
+
     // Get appointment details
-    const [appointmentRows] = await connection.execute(
+    const [appointmentRows]: any = await connection.execute(
       `SELECT sa.scheduled_date, sa.start_time, sa.parent_email, sa.parent_name, sa.consultation_request_id
        FROM scheduled_appointments sa
        WHERE sa.id = ?`,
@@ -2090,7 +2100,7 @@ app.post("/admin/cancel-appointment", async (req, res) => {
     } = appointmentRows[0];
 
     // Get dojo name and web page URL
-    const [dojoRows] = await connection.execute(
+    const [dojoRows]: any = await connection.execute(
       "SELECT dojo_name, dojo_tag FROM users WHERE dojo_tag = ? LIMIT 1",
       [dojo_tag]
     );
@@ -2129,7 +2139,7 @@ app.post("/admin/cancel-appointment", async (req, res) => {
       success: true,
       message: "Appointment canceled successfully",
     });
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error canceling appointment:", err);
     res
       .status(500)
@@ -2165,7 +2175,8 @@ app.post("/admin/reschedule-appointment", async (req, res) => {
     const new_end_time_24h = convertTo24Hour(new_end_time);
 
     // Get appointment details
-    const [appointmentRows] = await connection.execute(
+    const connection = await dbService.getBackOfficeDB();
+    const [appointmentRows]: any = await connection.execute(
       `SELECT sa.parent_email, sa.parent_name, sa.consultation_request_id
        FROM scheduled_appointments sa
        WHERE sa.id = ?`,
@@ -2180,7 +2191,7 @@ app.post("/admin/reschedule-appointment", async (req, res) => {
       appointmentRows[0];
 
     // Get appointment type from consultation request
-    const [requestRows] = await connection.execute(
+    const [requestRows]: any = await connection.execute(
       `SELECT appointment_type FROM consultation_requests WHERE id = ?`,
       [consultation_request_id]
     );
@@ -2188,7 +2199,7 @@ app.post("/admin/reschedule-appointment", async (req, res) => {
       requestRows.length > 0 ? requestRows[0].appointment_type : "Online";
 
     // Get dojo name
-    const [dojoRows] = await connection.execute(
+    const [dojoRows]: any = await connection.execute(
       "SELECT dojo_name FROM users WHERE dojo_tag = ? LIMIT 1",
       [dojo_tag]
     );
@@ -2241,7 +2252,7 @@ app.post("/admin/reschedule-appointment", async (req, res) => {
       new_start_time,
       new_end_time,
     });
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error rescheduling appointment:", err);
     res
       .status(500)
@@ -2262,9 +2273,11 @@ app.post("/users", async (req, res) => {
     let dojoTag = null;
     let finalDojoName = null;
 
+    const connection = await dbService.getBackOfficeDB();
+
     if (dojo_name) {
       // check if dojo already exists
-      const [dojoRows] = await connection.execute(
+      const [dojoRows]: any = await connection.execute(
         "SELECT id, name, slug FROM dojos WHERE name = ? LIMIT 1",
         [dojo_name]
       );
@@ -2276,7 +2289,7 @@ app.post("/users", async (req, res) => {
       } else {
         // create new dojo if not exists
         const slug = await generateUniqueSlug(dojo_name);
-        const [dojoResult] = await connection.execute(
+        const [dojoResult]: any = await connection.execute(
           "INSERT INTO dojos (name, slug) VALUES (?, ?)",
           [dojo_name, slug]
         );
@@ -2287,7 +2300,7 @@ app.post("/users", async (req, res) => {
     }
 
     // insert user
-    const [result] = await connection.execute(
+    const [result]: any = await connection.execute(
       `INSERT INTO users 
    (name, email, role, dojo_id, dojo_name, dojo_tag, stripe_account_id, tagline, description)
    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -2315,7 +2328,7 @@ app.post("/users", async (req, res) => {
       tagline: tagline || null,
       description: description || null,
     });
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Error creating user:", err.message);
     res
       .status(500)
@@ -2350,7 +2363,9 @@ app.post("/admin/users/create", async (req, res) => {
         );
     }
 
-    const [existing]: any[] = await combinePool.query(
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [existing]: any[] = await dbConnection.query(
       "SELECT id FROM users WHERE email = ?",
       [email]
     );
@@ -2364,7 +2379,7 @@ app.post("/admin/users/create", async (req, res) => {
     const plainPassword = password || Math.random().toString(36).slice(-12);
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-    const [result]: any[] = await combinePool.query(
+    const [result]: any[] = await dbConnection.query(
       `INSERT INTO users (name, email, role, password, referred_by, referral_code, created_at) 
        VALUES (?, ?, ?, ?, ?, ?, NOW())`,
       [
@@ -2390,7 +2405,7 @@ app.post("/admin/users/create", async (req, res) => {
         "User created successfully"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Create user error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2403,7 +2418,7 @@ app.post("/metrics/revenue", async (req, res) => {
   try {
     const { period = "all", start_date, end_date, class_id } = req.body;
     let dateFilter = "";
-    let params: any[]= [];
+    let params: any[] = [];
     if (period !== "all") {
       const dateRange = getDateRange(period, start_date, end_date);
       dateFilter = "AND t.date BETWEEN ? AND ?";
@@ -2415,7 +2430,9 @@ app.post("/metrics/revenue", async (req, res) => {
       params.push(class_id);
     }
 
-    const [summary] = await combinePool.query(
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [summary] = await dbConnection.query(
       `
       SELECT 
         SUM(revenue) as total_revenue,
@@ -2428,7 +2445,7 @@ app.post("/metrics/revenue", async (req, res) => {
       params
     );
 
-    const [byClass] = await combinePool.query(
+    const [byClass] = await dbConnection.query(
       `
       SELECT c.class_name, c.class_uid, SUM(t.revenue) as revenue, COUNT(*) as enrollments
       FROM transactions t
@@ -2440,7 +2457,7 @@ app.post("/metrics/revenue", async (req, res) => {
       params
     );
 
-    const [timeSeries] = await combinePool.query(
+    const [timeSeries] = await dbConnection.query(
       `
       SELECT DATE(date) as date, SUM(revenue) as revenue, SUM(expenses) as expenses
       FROM transactions t
@@ -2467,7 +2484,7 @@ app.post("/metrics/revenue", async (req, res) => {
         "Revenue metrics retrieved successfully"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Revenue metrics error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2478,14 +2495,16 @@ app.post("/metrics/enrollment", async (req, res) => {
   try {
     const { period = "all", start_date, end_date } = req.body;
     let dateFilter = "";
-    let params: any[]= [];
+    let params: any[] = [];
     if (period !== "all") {
       const dateRange = getDateRange(period, start_date, end_date);
       dateFilter = "AND created_at BETWEEN ? AND ?";
       params.push(dateRange.startDate, dateRange.endDate);
     }
 
-    const [newUsers] = await combinePool.query(
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [newUsers] = await dbConnection.query(
       `
       SELECT role, COUNT(*) as count
       FROM users
@@ -2495,13 +2514,13 @@ app.post("/metrics/enrollment", async (req, res) => {
       params
     );
 
-    const [activeUsers] = await combinePool.query(`
+    const [activeUsers] = await dbConnection.query(`
       SELECT COUNT(*) as count
       FROM users
       WHERE subscription_status IN ('active', 'trialing')
     `);
 
-    const [newEnrollments] = await combinePool.query(
+    const [newEnrollments] = await dbConnection.query(
       `
       SELECT COUNT(*) as count
       FROM enrollments
@@ -2510,7 +2529,7 @@ app.post("/metrics/enrollment", async (req, res) => {
       params
     );
 
-    const [enrollmentsByClass] = await combinePool.query(
+    const [enrollmentsByClass] = await dbConnection.query(
       `
       SELECT c.class_name, c.class_uid, COUNT(e.id) as enrollment_count
       FROM enrollments e
@@ -2522,7 +2541,7 @@ app.post("/metrics/enrollment", async (req, res) => {
       params
     );
 
-    const [timeSeries] = await combinePool.query(
+    const [timeSeries] = await dbConnection.query(
       `
       SELECT DATE(created_at) as date, COUNT(*) as new_users
       FROM users
@@ -2547,7 +2566,7 @@ app.post("/metrics/enrollment", async (req, res) => {
         "Enrollment metrics retrieved successfully"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Enrollment metrics error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2558,7 +2577,7 @@ app.post("/metrics/attendance", async (req, res) => {
   try {
     const { period = "all", start_date, end_date, class_id } = req.body;
     let dateFilter = "";
-    let params: any[]= [];
+    let params: any[] = [];
     if (period !== "all") {
       const dateRange = getDateRange(period, start_date, end_date);
       dateFilter = "AND attendance_date BETWEEN ? AND ?";
@@ -2570,7 +2589,9 @@ app.post("/metrics/attendance", async (req, res) => {
       params.push(class_id);
     }
 
-    const [summary] = await combinePool.query(
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [summary] = await dbConnection.query(
       `
       SELECT 
         COUNT(*) as total_records,
@@ -2584,7 +2605,7 @@ app.post("/metrics/attendance", async (req, res) => {
       params
     );
 
-    const [byClass] = await combinePool.query(
+    const [byClass] = await dbConnection.query(
       `
       SELECT 
         a.class_id,
@@ -2601,7 +2622,7 @@ app.post("/metrics/attendance", async (req, res) => {
       params
     );
 
-    const [attendanceSeries] = await combinePool.query(
+    const [attendanceSeries] = await dbConnection.query(
       `
       SELECT 
         DATE(attendance_date) as date,
@@ -2627,7 +2648,7 @@ app.post("/metrics/attendance", async (req, res) => {
         "Attendance metrics retrieved successfully"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Attendance metrics error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2638,7 +2659,8 @@ app.post("/metrics/subscriptions", async (req, res) => {
   try {
     const { period = "all", start_date, end_date } = req.body; // period not used here
 
-    const [userSubscriptions] = await combinePool.query(`
+    const dbConnection = await dbService.getMobileApiDb();
+    const [userSubscriptions] = await dbConnection.query(`
       SELECT 
         subscription_status,
         COUNT(*) as count
@@ -2647,7 +2669,7 @@ app.post("/metrics/subscriptions", async (req, res) => {
       GROUP BY subscription_status
     `);
 
-    const [byPlan] = await combinePool.query(`
+    const [byPlan] = await dbConnection.query(`
       SELECT 
         active_sub as plan,
         COUNT(*) as count
@@ -2656,7 +2678,7 @@ app.post("/metrics/subscriptions", async (req, res) => {
       GROUP BY active_sub
     `);
 
-    const [childrenSubs] = await combinePool.query(`
+    const [childrenSubs] = await dbConnection.query(`
       SELECT 
         status,
         COUNT(*) as count
@@ -2664,7 +2686,7 @@ app.post("/metrics/subscriptions", async (req, res) => {
       GROUP BY status
     `);
 
-    const [revenue] = await combinePool.query(`
+    const [revenue] = await dbConnection.query(`
       SELECT SUM(t.revenue) as total_subscription_revenue
       FROM transactions t
       WHERE t.transaction_title LIKE '%subscription%' OR t.transaction_title LIKE '%enrollment%'
@@ -2682,7 +2704,7 @@ app.post("/metrics/subscriptions", async (req, res) => {
         "Subscription metrics retrieved successfully"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Subscription metrics error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2693,14 +2715,16 @@ app.post("/metrics/overview", async (req, res) => {
   try {
     const { period = "this_month", start_date, end_date } = req.body;
     let dateFilter = "";
-    let params: any[]= [];
+    let params: any[] = [];
     if (period !== "all") {
       const dateRange = getDateRange(period, start_date, end_date);
       dateFilter = "AND created_at BETWEEN ? AND ?";
       params.push(dateRange.startDate, dateRange.endDate);
     }
 
-    const [userCounts] = await combinePool.query(`
+    const dbConnection = await dbService.getMobileApiDb();
+
+    const [userCounts] = await dbConnection.query(`
       SELECT 
         COUNT(*) as total_users,
         SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admins,
@@ -2710,14 +2734,14 @@ app.post("/metrics/overview", async (req, res) => {
       FROM users
     `);
 
-    const [classCounts] = await combinePool.query(`
+    const [classCounts] = await dbConnection.query(`
       SELECT 
         COUNT(*) as total_classes,
         SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_classes
       FROM classes
     `);
 
-    const [revenueSummary] = await combinePool.query(`
+    const [revenueSummary] = await dbConnection.query(`
       SELECT 
         SUM(revenue) as total_revenue,
         SUM(expenses) as total_expenses,
@@ -2725,7 +2749,7 @@ app.post("/metrics/overview", async (req, res) => {
       FROM transactions
     `);
 
-    const [recentEnrollments] = await combinePool.query(
+    const [recentEnrollments] = await dbConnection.query(
       `
       SELECT COUNT(*) as count
       FROM enrollments
@@ -2734,16 +2758,16 @@ app.post("/metrics/overview", async (req, res) => {
       params
     );
 
-    const [activeSubs] = await combinePool.query(`
+    const [activeSubs] = await dbConnection.query(`
       SELECT COUNT(*) as count
       FROM users
       WHERE subscription_status IN ('active', 'trialing')
     `);
 
-    const [feedbackCount] = await combinePool.query(
+    const [feedbackCount] = await dbConnection.query(
       "SELECT COUNT(*) as count FROM feedback"
     );
-    const [waitlistCount] = await combinePool.query(
+    const [waitlistCount] = await dbConnection.query(
       "SELECT COUNT(*) as count FROM waitlist"
     );
 
@@ -2763,7 +2787,7 @@ app.post("/metrics/overview", async (req, res) => {
         "Overview metrics retrieved successfully"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Overview metrics error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2786,12 +2810,15 @@ app.put("/admin/users/:email", async (req, res) => {
       .map((key) => `${key} = ?`)
       .join(", ");
     const values = [...Object.values(updates), email];
-    await combinePool.query(
+
+    const  dbConnection =  await dbService.getMobileApiDb();
+
+    await dbConnection.query(
       `UPDATE users SET ${fields} WHERE email = ?`,
       values
     );
     res.json(formatResponse(true, null, "User updated successfully"));
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Update user error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2814,7 +2841,10 @@ app.patch("/admin/users/:email/status", async (req, res) => {
           )
         );
     }
-    await combinePool.query(
+
+    const dbConnection = await dbService.getMobileApiDb();
+
+    await dbConnection.query(
       "UPDATE users SET subscription_status = ? WHERE email = ?",
       [status, email]
     );
@@ -2825,7 +2855,7 @@ app.patch("/admin/users/:email/status", async (req, res) => {
         `User ${status === "active" ? "activated" : "deactivated"} successfully`
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Update user status error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2848,12 +2878,16 @@ app.delete("/admin/users/:email", async (req, res) => {
           )
         );
     }
-    await combinePool.query(
+
+    
+    const  dbConnection =  await dbService.getMobileApiDb();
+
+await dbConnection.query(
       "UPDATE users SET subscription_status = ? WHERE email = ?",
       ["deleted", email]
     );
     res.json(formatResponse(true, null, "User soft deleted successfully"));
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Soft delete user error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2876,9 +2910,11 @@ app.delete("/admin/users/:email/hard", async (req, res) => {
           )
         );
     }
-    await combinePool.query("DELETE FROM users WHERE email = ?", [email]);
+    const  dbConnection = await  dbService.getMobileApiDb();
+
+    await dbConnection.query("DELETE FROM users WHERE email = ?", [email]);
     res.json(formatResponse(true, null, "User permanently deleted"));
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Hard delete user error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2916,7 +2952,8 @@ app.post("/admin/classes/create", async (req, res) => {
         );
     }
     const class_uid = Math.random().toString(36).substr(2, 10);
-    const [result]: any[] = await combinePool.query(
+    const dbConnection = await dbService.getMobileApiDb();
+    const [result]: any[] = await dbConnection.query(
       `INSERT INTO classes (class_uid, owner_email, class_name, description, instructor, level, 
        age_group, frequency, capacity, location, street_address, city, subscription, price, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())`,
@@ -2946,7 +2983,9 @@ app.post("/admin/classes/create", async (req, res) => {
         s.end_time,
         s.schedule_date || null,
       ]);
-      await combinePool.query(
+      const  dbConnection =  await dbService.getMobileApiDb();
+
+await dbConnection.query(
         "INSERT INTO class_schedule (class_id, day, start_time, end_time, schedule_date) VALUES ?",
         [scheduleValues]
       );
@@ -2958,7 +2997,7 @@ app.post("/admin/classes/create", async (req, res) => {
         "Class created successfully"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Create class error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -2981,12 +3020,14 @@ app.put("/admin/classes/:class_uid", async (req, res) => {
       .map((key) => `${key} = ?`)
       .join(", ");
     const values = [...Object.values(updates), class_uid];
-    await combinePool.query(
+    const  dbConnection =  await dbService.getMobileApiDb();
+
+await dbConnection.query(
       `UPDATE classes SET ${fields} WHERE class_uid = ?`,
       values
     );
     res.json(formatResponse(true, null, "Class updated successfully"));
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Update class error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -3009,12 +3050,14 @@ app.delete("/admin/classes/:class_uid", async (req, res) => {
           )
         );
     }
-    await combinePool.query(
+    const  dbConnection =  await dbService.getMobileApiDb();
+
+await dbConnection.query(
       "UPDATE classes SET status = ? WHERE class_uid = ?",
       ["deleted", class_uid]
     );
     res.json(formatResponse(true, null, "Class soft deleted successfully"));
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Soft delete class error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -3042,17 +3085,19 @@ app.post("/admin/classes/:class_uid/enroll", async (req, res) => {
       "enr_" +
       Date.now().toString(16) +
       Math.random().toString(16).substr(2, 5);
-    await combinePool.query(
+    const  dbConnection =  await dbService.getMobileApiDb();
+
+await dbConnection.query(
       "INSERT INTO enrollments (enrollment_id, class_id, parent_email, created_at) VALUES (?, ?, ?, NOW())",
       [enrollment_id, class_uid, parent_email]
     );
     if (child_name) {
-      await combinePool.query(
+      await dbConnection.query(
         "INSERT INTO enrolled_children (enrollment_id, child_name, child_email, experience_level) VALUES (?, ?, ?, ?)",
         [enrollment_id, child_name, child_email, experience_level || "beginner"]
       );
     }
-    await combinePool.query(
+    await dbConnection.query(
       `
       INSERT INTO parents (email, enrollment_id, class_id) VALUES (?, ?, ?)
       ON DUPLICATE KEY UPDATE 
@@ -3064,7 +3109,7 @@ app.post("/admin/classes/:class_uid/enroll", async (req, res) => {
     res.json(
       formatResponse(true, { enrollment_id }, "Student enrolled successfully")
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Enroll student error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -3076,16 +3121,18 @@ app.delete(
   async (req, res) => {
     try {
       const { class_uid, student_email } = req.params;
-      await combinePool.query(
+      const  dbConnection =  await dbService.getMobileApiDb();
+
+await dbConnection.query(
         "DELETE FROM students WHERE email = ? AND class_id = ?",
         [student_email, class_uid]
       );
-      await combinePool.query(
+      await dbConnection.query(
         "DELETE FROM enrollments WHERE class_id = ? AND parent_email IN (SELECT added_by FROM students WHERE email = ?)",
         [class_uid, student_email]
       );
       res.json(formatResponse(true, null, "Student unenrolled successfully"));
-    } catch (error:any) {
+    } catch (error: any) {
       console.error("Unenroll student error:", error);
       res.status(500).json(formatResponse(false, null, null, error.message));
     }
@@ -3097,7 +3144,8 @@ app.post("/admin/classes/:class_uid/attendance/export", async (req, res) => {
   try {
     const { class_uid } = req.params;
     const { format = "csv" } = req.body;
-    const [attendance] = await combinePool.query(
+    const dbConnection = await dbService.getMobileApiDb();
+    const [attendance] = await dbConnection.query(
       `
       SELECT a.id, a.email, u.name as student_name, a.attendance_date, a.status, a.created_at
       FROM attendance_records a
@@ -3164,7 +3212,7 @@ app.post("/admin/classes/:class_uid/attendance/export", async (req, res) => {
         });
       }
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Export class attendance error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -3215,7 +3263,7 @@ app.post("/test-email", async (req, res) => {
       message: `Test email sent successfully to ${email}`,
       timestamp: new Date().toISOString(),
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("❌ Error sending test email:", error.message);
     res.status(500).json({
       error: "Failed to send test email",
@@ -3235,14 +3283,16 @@ app.get("/notifications/:user_email", async (req, res) => {
     const { user_email } = req.params;
     const { limit = 50, unread_only = false } = req.query;
     let query = "SELECT * FROM notifications WHERE user_email = ?";
-    const params: any[]= [user_email];
+    const params: any[] = [user_email];
     if (unread_only === "true") {
       query += " AND is_read = 0";
     }
     query += " ORDER BY created_at DESC LIMIT ?";
     params.push(parseInt(limit as any));
-    const [notifications]: any[] = await combinePool.query(query, params);
-    const [unreadCount] = await combinePool.query(
+
+    const dbConnection = await dbService.getMobileApiDb();
+    const [notifications]: any[] = await dbConnection.query(query, params);
+    const [unreadCount] = await dbConnection.query(
       "SELECT COUNT(*) as count FROM notifications WHERE user_email = ? AND is_read = 0",
       [user_email]
     );
@@ -3257,7 +3307,7 @@ app.get("/notifications/:user_email", async (req, res) => {
         "Notifications retrieved successfully"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Get notifications error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -3285,7 +3335,9 @@ app.post("/notifications", async (req, res) => {
           )
         );
     }
-    const [result]: any[] = await combinePool.query(
+
+    const dbConnection = await dbService.getMobileApiDb();
+    const [result]: any[] = await dbConnection.query(
       `INSERT INTO notifications (user_email, title, message, type, event_id, is_read, created_at, status)
        VALUES (?, ?, ?, ?, ?, 0, NOW(), 'pending')`,
       [user_email, title, message, type, event_id]
@@ -3297,7 +3349,7 @@ app.post("/notifications", async (req, res) => {
         "Notification created successfully"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Create notification error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -3307,12 +3359,14 @@ app.post("/notifications", async (req, res) => {
 app.patch("/notifications/:id/read", async (req, res) => {
   try {
     const { id } = req.params;
-    await combinePool.query(
+    const  dbConnection =  await dbService.getMobileApiDb();
+
+await dbConnection.query(
       "UPDATE notifications SET is_read = 1 WHERE id = ?",
       [id]
     );
     res.json(formatResponse(true, null, "Notification marked as read"));
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Mark notification read error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -3322,7 +3376,8 @@ app.patch("/notifications/:id/read", async (req, res) => {
 app.patch("/notifications/read_all/:user_email", async (req, res) => {
   try {
     const { user_email } = req.params;
-    const [result]: any[] = await combinePool.query(
+    const dbConnection = await dbService.getMobileApiDb();
+    const [result]: any[] = await dbConnection.query(
       "UPDATE notifications SET is_read = 1 WHERE user_email = ? AND is_read = 0",
       [user_email]
     );
@@ -3333,7 +3388,7 @@ app.patch("/notifications/read_all/:user_email", async (req, res) => {
         "All notifications marked as read"
       )
     );
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Mark all notifications read error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -3343,9 +3398,11 @@ app.patch("/notifications/read_all/:user_email", async (req, res) => {
 app.delete("/notifications/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    await combinePool.query("DELETE FROM notifications WHERE id = ?", [id]);
+    const  dbConnection =  await dbService.getMobileApiDb();
+
+await dbConnection.query("DELETE FROM notifications WHERE id = ?", [id]);
     res.json(formatResponse(true, null, "Notification deleted successfully"));
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Delete notification error:", error);
     res.status(500).json(formatResponse(false, null, null, error.message));
   }
@@ -3414,17 +3471,5 @@ app.use(notFound);
 /* ------------------ ERROR HANDLING ------------------ */
 // register AFTER all routes
 app.use(errorHandler);
-
-/* ------------------ START ------------------ */
-(async () => {
-  try {
-    await dbService.initDB(); // ✅ ensure DB is ready before listen
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  } catch (e) {
-    console.error("DB init failed:", e);
-    process.exit(1);
-  }
-})();
 
 export default app;

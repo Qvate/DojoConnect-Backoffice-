@@ -4,4 +4,7 @@ module.exports = {
   testEnvironment: "node",
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+  },
 };

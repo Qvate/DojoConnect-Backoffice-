@@ -11,7 +11,7 @@ describe("Dojo Service", () => {
   beforeEach(() => {
     const dbServiceSpy = createDbServiceSpies();
 
-    getDbConnectionSpy = dbServiceSpy.getDbConnectionSpy;
+    getDbConnectionSpy = dbServiceSpy.getBackOfficeDbSpy;
     mockExecute = dbServiceSpy.mockExecute;
   });
 

@@ -1,17 +1,14 @@
 import request from "supertest";
 
 // Import the mock execute function so we can control its behavior in our tests.
-import { createDbServiceSpies } from "../tests/spies/db.service.spies";
 import { buildDojoMock } from "../tests/factories/dojos.factory";
-
+import { createDbServiceSpies } from "../tests/spies/db.service.spies";
 import app from "../app";
-// Tell Jest to use our manual mock for the db.service.
-jest.mock("../services/db.service");
 
 describe("Dojo Routes", () => {
   let mockExecute: jest.Mock;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const dbServiceSpy = createDbServiceSpies();
 
     mockExecute = dbServiceSpy.mockExecute;

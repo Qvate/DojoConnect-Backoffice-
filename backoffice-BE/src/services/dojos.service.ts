@@ -14,9 +14,8 @@ export interface IDojo {
   created_at: Date;
 }
 
-
 export const fetchDojoBySlug = async (slug: string) => {
-  const dbConnection = await dbService.getDBConnection();
+  const dbConnection = await dbService.getBackOfficeDB();
 
   const [rows] = await dbConnection.execute(
     `SELECT id, name, email, role, dojo_id, dojo_name, dojo_tag, tagline, description, created_at
