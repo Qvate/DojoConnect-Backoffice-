@@ -6,6 +6,7 @@ on:
             - main
             - develop
             - staging
+            - production
         paths:
             - "backoffice-BE/**" # 🚀 Only runs when backend folder changes
     workflow_dispatch:

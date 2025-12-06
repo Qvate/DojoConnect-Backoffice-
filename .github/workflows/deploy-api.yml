@@ -3,7 +3,7 @@ name: Deploy Backoffice API to cPanel
 on:
   push:
     branches:
-      - main
+      - production
     paths:
       - "backoffice-BE/**"   # 🚀 Only deploy when backend folder changes
   workflow_dispatch:
