@@ -1,59 +1,66 @@
 {
-  "id": "00000000-0000-0000-0000-000000000000",
-  "prevId": "",
   "version": "5",
   "dialect": "mysql",
+  "id": "ed933644-dd0c-4f9d-b500-650e18b99f1d",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "admin": {
       "name": "admin",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "first_name": {
-          "autoincrement": false,
           "name": "first_name",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "last_name": {
-          "autoincrement": false,
           "name": "last_name",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "email": {
-          "autoincrement": false,
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "password": {
-          "autoincrement": false,
           "name": "password",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "admin_id": {
+          "name": "admin_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {
         "email": {
           "name": "email",
@@ -68,98 +75,52 @@
       "name": "admin_password_resets",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "admin_email": {
-          "autoincrement": false,
           "name": "admin_email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "otp": {
-          "autoincrement": false,
           "name": "otp",
           "type": "varchar(6)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "expires_at": {
-          "autoincrement": false,
           "name": "expires_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "announcements": {
-      "name": "announcements",
-      "columns": {
-        "id": {
-          "autoincrement": true,
-          "name": "id",
-          "type": "int(11)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "autoincrement": false,
-          "name": "title",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "message": {
-          "autoincrement": false,
-          "name": "message",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sender_email": {
-          "autoincrement": false,
-          "name": "sender_email",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "urgency": {
-          "default": "'''Update'''",
-          "autoincrement": false,
-          "name": "urgency",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "autoincrement": false,
-          "name": "created_at",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": true
+      "compositePrimaryKeys": {
+        "admin_password_resets_id": {
+          "name": "admin_password_resets_id",
+          "columns": [
+            "id"
+          ]
         }
       },
-      "compositePrimaryKeys": {},
-      "indexes": {},
-      "foreignKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -167,28 +128,27 @@
       "name": "announcement_recipients",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "announcement_id": {
-          "autoincrement": false,
           "name": "announcement_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "recipient_email": {
-          "autoincrement": false,
           "name": "recipient_email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "announcement_id": {
           "name": "announcement_id",
@@ -199,6 +159,74 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "announcement_recipients_id": {
+          "name": "announcement_recipients_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "announcements": {
+      "name": "announcements",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sender_email": {
+          "name": "sender_email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "urgency": {
+          "name": "urgency",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Update'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "announcements_id": {
+          "name": "announcements_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -206,52 +234,59 @@
       "name": "attendance_records",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "class_id": {
-          "autoincrement": false,
           "name": "class_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "email": {
-          "autoincrement": false,
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "attendance_date": {
-          "autoincrement": false,
           "name": "attendance_date",
           "type": "date",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "status": {
-          "autoincrement": false,
           "name": "status",
           "type": "enum('Present','Absent','Late')",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "attendance_records_id": {
+          "name": "attendance_records_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -259,28 +294,27 @@
       "name": "broadcast_recipients",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "message_id": {
-          "autoincrement": false,
           "name": "message_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "recipient_id": {
-          "autoincrement": false,
           "name": "recipient_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "message_id": {
           "name": "message_id",
@@ -298,62 +332,14 @@
         }
       },
       "foreignKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "chats": {
-      "name": "chats",
-      "columns": {
-        "id": {
-          "autoincrement": true,
-          "name": "id",
-          "type": "int(11)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "autoincrement": false,
-          "name": "type",
-          "type": "enum('dm','group','broadcast')",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "name",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_by": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "created_by",
-          "type": "int(11)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {
-        "created_by": {
-          "name": "created_by",
+      "compositePrimaryKeys": {
+        "broadcast_recipients_id": {
+          "name": "broadcast_recipients_id",
           "columns": [
-            "created_by"
-          ],
-          "isUnique": false
+            "id"
+          ]
         }
       },
-      "foreignKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -361,28 +347,27 @@
       "name": "chat_participants",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "chat_id": {
-          "autoincrement": false,
           "name": "chat_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "user_id": {
-          "autoincrement": false,
           "name": "user_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "user_id": {
           "name": "user_id",
@@ -401,6 +386,75 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "chat_participants_id": {
+          "name": "chat_participants_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "chats": {
+      "name": "chats",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "type": {
+          "name": "type",
+          "type": "enum('dm','group','broadcast')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "created_by": {
+          "name": "created_by",
+          "columns": [
+            "created_by"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "chats_id": {
+          "name": "chats_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -408,317 +462,131 @@
       "name": "children_subscription",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "child_id": {
-          "autoincrement": false,
           "name": "child_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "enrollment_id": {
-          "autoincrement": false,
           "name": "enrollment_id",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "stripe_subscription_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "stripe_subscription_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "stripe_customer_id": {
-          "autoincrement": false,
           "name": "stripe_customer_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "status": {
-          "default": "'''active'''",
-          "autoincrement": false,
           "name": "status",
           "type": "enum('active','cancelled','paused')",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'active'"
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "stripe_session_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "stripe_session_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "classes": {
-      "name": "classes",
-      "columns": {
-        "id": {
-          "autoincrement": true,
-          "name": "id",
-          "type": "int(11)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "class_uid": {
-          "autoincrement": false,
-          "name": "class_uid",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "owner_email": {
-          "autoincrement": false,
-          "name": "owner_email",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "class_name": {
-          "autoincrement": false,
-          "name": "class_name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "instructor": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "instructor",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "level": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "level",
-          "type": "enum('Beginner','Intermediate','Advanced')",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "age_group": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "age_group",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "frequency": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "frequency",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "capacity": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "capacity",
-          "type": "int(11)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "location": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "location",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "street_address": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "street_address",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "city": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "city",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status": {
-          "default": "'''active'''",
-          "autoincrement": false,
-          "name": "status",
-          "type": "enum('active','deleted','hide')",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "image_path": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "image_path",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "subscription": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "subscription",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "price": {
-          "default": "'0.00'",
-          "autoincrement": false,
-          "name": "price",
-          "type": "decimal(10,2)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "chat_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "chat_id",
-          "type": "int(11)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stripe_price_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "stripe_price_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stripe_product_id": {
-          "autoincrement": false,
-          "name": "stripe_product_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {},
-      "foreignKeys": {},
-      "uniqueConstraints": {
-        "class_uid": {
-          "name": "class_uid",
+      "compositePrimaryKeys": {
+        "children_subscription_id": {
+          "name": "children_subscription_id",
           "columns": [
-            "class_uid"
+            "id"
           ]
         }
       },
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "class_schedule": {
       "name": "class_schedule",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "class_id": {
-          "autoincrement": false,
           "name": "class_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "day": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "day",
           "type": "varchar(20)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "start_time": {
-          "autoincrement": false,
           "name": "start_time",
           "type": "time",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "end_time": {
-          "autoincrement": false,
           "name": "end_time",
           "type": "time",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "schedule_date": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "schedule_date",
           "type": "date",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "class_id": {
           "name": "class_id",
@@ -729,61 +597,257 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "class_schedule_id": {
+          "name": "class_schedule_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "classes": {
+      "name": "classes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "class_uid": {
+          "name": "class_uid",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "owner_email": {
+          "name": "owner_email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "instructor": {
+          "name": "instructor",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "level": {
+          "name": "level",
+          "type": "enum('Beginner','Intermediate','Advanced')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "age_group": {
+          "name": "age_group",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "frequency": {
+          "name": "frequency",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "capacity": {
+          "name": "capacity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "street_address": {
+          "name": "street_address",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "city": {
+          "name": "city",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('active','deleted','hide')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "image_path": {
+          "name": "image_path",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "subscription": {
+          "name": "subscription",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "price": {
+          "name": "price",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'0.00'"
+        },
+        "chat_id": {
+          "name": "chat_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stripe_price_id": {
+          "name": "stripe_price_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stripe_product_id": {
+          "name": "stripe_product_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "classes_id": {
+          "name": "classes_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "class_uid": {
+          "name": "class_uid",
+          "columns": [
+            "class_uid"
+          ]
+        }
+      },
       "checkConstraint": {}
     },
     "deletion_requests": {
       "name": "deletion_requests",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "title": {
-          "autoincrement": false,
           "name": "title",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "email": {
-          "autoincrement": false,
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "reason": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "reason",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "status": {
-          "default": "'''pending'''",
-          "autoincrement": false,
           "name": "status",
           "type": "enum('pending','approved','rejected')",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'pending'"
         },
         "requested_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "requested_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "deletion_requests_id": {
+          "name": "deletion_requests_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -791,53 +855,59 @@
       "name": "dojos",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "user_email": {
-          "autoincrement": false,
           "name": "user_email",
           "type": "varchar(150)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "dojo_name": {
-          "autoincrement": false,
           "name": "dojo_name",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "dojo_tag": {
-          "autoincrement": false,
           "name": "dojo_tag",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "dojo_tagline": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "dojo_tagline",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "dojos_id": {
+          "name": "dojos_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {
         "tag": {
           "name": "tag",
@@ -852,42 +922,41 @@
       "name": "enrolled_children",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "enrollment_id": {
-          "autoincrement": false,
           "name": "enrollment_id",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "child_name": {
-          "autoincrement": false,
           "name": "child_name",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "child_email": {
-          "autoincrement": false,
           "name": "child_email",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "experience_level": {
-          "autoincrement": false,
           "name": "experience_level",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "enrollment_id": {
           "name": "enrollment_id",
@@ -898,6 +967,14 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "enrolled_children_id": {
+          "name": "enrolled_children_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -905,45 +982,52 @@
       "name": "enrollments",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "enrollment_id": {
-          "autoincrement": false,
           "name": "enrollment_id",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "class_id": {
-          "autoincrement": false,
           "name": "class_id",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "parent_email": {
-          "autoincrement": false,
           "name": "parent_email",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "enrollments_id": {
+          "name": "enrollments_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {
         "enrollment_id": {
           "name": "enrollment_id",
@@ -958,136 +1042,140 @@
       "name": "events",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "title": {
-          "autoincrement": false,
           "name": "title",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "description": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "class_ids": {
-          "autoincrement": false,
           "name": "class_ids",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "visibility": {
-          "autoincrement": false,
           "name": "visibility",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "event_date": {
-          "autoincrement": false,
           "name": "event_date",
           "type": "date",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "start_time": {
-          "autoincrement": false,
           "name": "start_time",
           "type": "varchar(20)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "end_time": {
-          "autoincrement": false,
           "name": "end_time",
           "type": "varchar(20)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "notification_value": {
-          "default": 0,
-          "autoincrement": false,
           "name": "notification_value",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
         },
         "notification_unit": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "notification_unit",
           "type": "varchar(20)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "location": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "location",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "link": {
-          "autoincrement": false,
           "name": "link",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_by": {
-          "autoincrement": false,
           "name": "created_by",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "notification_sent": {
-          "default": 0,
-          "autoincrement": false,
           "name": "notification_sent",
-          "type": "tinyint(1)",
+          "type": "tinyint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
         },
         "response_status": {
-          "default": "'''pending'''",
-          "autoincrement": false,
           "name": "response_status",
           "type": "varchar(121)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "events_id": {
+          "name": "events_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1095,56 +1183,59 @@
       "name": "feedback",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "user_email": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "user_email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "message": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "full_name": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "full_name",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "role": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "role",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "submitted_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "submitted_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "feedback_id": {
+          "name": "feedback_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1152,63 +1243,66 @@
       "name": "instructors_tbl",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "instructor_first_name": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "instructor_first_name",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "instructor_last_name": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "instructor_last_name",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "instructor_email": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "instructor_email",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "invited_by": {
-          "autoincrement": false,
           "name": "invited_by",
           "type": "varchar(121)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "class": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "class",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "status": {
-          "default": "'''pending'''",
-          "autoincrement": false,
           "name": "status",
           "type": "varchar(121)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "instructors_tbl_id": {
+          "name": "instructors_tbl_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1216,43 +1310,42 @@
       "name": "messages",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "chat_id": {
-          "autoincrement": false,
           "name": "chat_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "sender_id": {
-          "autoincrement": false,
           "name": "sender_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "message": {
-          "autoincrement": false,
           "name": "message",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "idx_messages_chat_id": {
           "name": "idx_messages_chat_id",
@@ -1270,6 +1363,14 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "messages_id": {
+          "name": "messages_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1277,88 +1378,89 @@
       "name": "notifications",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "user_email": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "user_email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "title": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "title",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "message": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "is_read": {
-          "default": 0,
-          "autoincrement": false,
           "name": "is_read",
-          "type": "tinyint(1)",
+          "type": "tinyint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "type": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "type",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "event_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "event_id",
           "type": "varchar(121)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "accept_decline": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "accept_decline",
           "type": "varchar(20)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "status": {
-          "default": "'''pending'''",
-          "autoincrement": false,
           "name": "status",
           "type": "varchar(20)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'pending'"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "notifications_id": {
+          "name": "notifications_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1366,39 +1468,46 @@
       "name": "parents",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "email": {
-          "autoincrement": false,
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "enrollment_id": {
-          "default": "''''''",
-          "autoincrement": false,
           "name": "enrollment_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
         },
         "class_id": {
-          "default": "''''''",
-          "autoincrement": false,
           "name": "class_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "parents_id": {
+          "name": "parents_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {
         "unique_parent_enrollment": {
           "name": "unique_parent_enrollment",
@@ -1415,30 +1524,30 @@
       "name": "password_resets",
       "columns": {
         "email": {
-          "autoincrement": false,
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "token": {
-          "autoincrement": false,
           "name": "token",
           "type": "varchar(64)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "expires_at": {
-          "autoincrement": false,
           "name": "expires_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1446,52 +1555,49 @@
       "name": "sessions",
       "columns": {
         "session_id": {
-          "autoincrement": false,
           "name": "session_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "user_email": {
-          "autoincrement": false,
           "name": "user_email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "user_ip": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "user_ip",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "user_agent": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "user_agent",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "expires_at": {
-          "autoincrement": false,
           "name": "expires_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "user_email": {
           "name": "user_email",
@@ -1502,6 +1608,7 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1509,56 +1616,59 @@
       "name": "students",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "full_name": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "full_name",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "email": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "class_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "class_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "added_by": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "added_by",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "students_id": {
+          "name": "students_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {
         "email": {
           "name": "email",
@@ -1573,96 +1683,95 @@
       "name": "tasks",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "title": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "title",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "description": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "assigned_to": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "assigned_to",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "created_by": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "created_by",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "due_date": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "due_date",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "notification_value": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "notification_value",
           "type": "varchar(10)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "notification_unit": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "notification_unit",
           "type": "varchar(10)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "status": {
-          "default": "'''pending'''",
-          "autoincrement": false,
           "name": "status",
           "type": "enum('pending','in_progress','completed','declined')",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'pending'"
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "tasks_id": {
+          "name": "tasks_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1670,70 +1779,157 @@
       "name": "transactions",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "user_email": {
-          "autoincrement": false,
           "name": "user_email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "transaction_title": {
-          "autoincrement": false,
           "name": "transaction_title",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "revenue": {
-          "default": "'0.00'",
-          "autoincrement": false,
           "name": "revenue",
           "type": "decimal(10,2)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'0.00'"
         },
         "expenses": {
-          "default": "'0.00'",
-          "autoincrement": false,
           "name": "expenses",
           "type": "decimal(10,2)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'0.00'"
         },
         "committed_by": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "committed_by",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "date": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "date",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "class_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "class_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "transactions_id": {
+          "name": "transactions_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "user_cards": {
+      "name": "user_cards",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_email": {
+          "name": "user_email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "payment_method_id": {
+          "name": "payment_method_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "brand": {
+          "name": "brand",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last4": {
+          "name": "last4",
+          "type": "varchar(4)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "exp_month": {
+          "name": "exp_month",
+          "type": "varchar(2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "exp_year": {
+          "name": "exp_year",
+          "type": "varchar(4)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "user_cards_id": {
+          "name": "user_cards_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1741,189 +1937,180 @@
       "name": "users",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "name": {
-          "autoincrement": false,
           "name": "name",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "username": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "username",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "email": {
-          "autoincrement": false,
           "name": "email",
           "type": "varchar(150)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "password": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "password",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "referred_by": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "referred_by",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "avatar": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "avatar",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "role": {
-          "default": "'''child'''",
-          "autoincrement": false,
           "name": "role",
           "type": "enum('admin','instructor','parent','child')",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'child'"
         },
         "balance": {
-          "default": "'0.00'",
-          "autoincrement": false,
           "name": "balance",
           "type": "decimal(10,2)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'0.00'"
         },
         "referral_code": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "referral_code",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "active_sub": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "active_sub",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "dob": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "dob",
           "type": "varchar(20)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "gender": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "gender",
           "type": "varchar(10)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "city": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "city",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "street": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "street",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "stripe_customer_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "stripe_customer_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "stripe_subscription_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "stripe_subscription_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "subscription_status": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "subscription_status",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "trial_ends_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "trial_ends_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "stripe_account_id": {
-          "autoincrement": false,
           "name": "stripe_account_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "fcm_token": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "fcm_token",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "session_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "session_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "users_id": {
+          "name": "users_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {
         "email": {
           "name": "email",
@@ -1958,123 +2145,49 @@
       },
       "checkConstraint": {}
     },
-    "user_cards": {
-      "name": "user_cards",
-      "columns": {
-        "id": {
-          "autoincrement": true,
-          "name": "id",
-          "type": "int(11)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_email": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "user_email",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "payment_method_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "payment_method_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "brand": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "brand",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "last4": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "last4",
-          "type": "varchar(4)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "exp_month": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "exp_month",
-          "type": "varchar(2)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "exp_year": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "exp_year",
-          "type": "varchar(4)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_default": {
-          "default": 0,
-          "autoincrement": false,
-          "name": "is_default",
-          "type": "tinyint(1)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {},
-      "foreignKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
     "waitlist": {
       "name": "waitlist",
       "columns": {
         "id": {
-          "autoincrement": true,
           "name": "id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "fullname": {
-          "autoincrement": false,
           "name": "fullname",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "email": {
-          "autoincrement": false,
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "waitlist_id": {
+          "name": "waitlist_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {
         "email": {
           "name": "email",
