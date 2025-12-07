@@ -1,14 +1,21 @@
 import { eq, InferSelectModel } from "drizzle-orm";
-import { getDB } from "../db";
+import * as dbService from "../db";
 import { dojos } from "../db/schema";
 
 export type IDojo = InferSelectModel<typeof dojos>;
 
+export const findOne = <T>(rows: T[]): T | null => rows[0] ?? null;
+
 export const fetchDojoBySlug = async (slug: string): Promise<IDojo | null> => {
   try {
-    const dojo = await getDB().query.dojos.findFirst({
-      where: eq(dojos.dojoTag, slug),
-    });
+    const dojo = findOne(
+      await dbService.getDB()
+        .select()
+        .from(dojos)
+        .where(eq(dojos.dojoTag, slug))
+        .limit(1)
+        .execute()
+    );
 
     if (!dojo) {
       return null;
@@ -23,9 +30,15 @@ export const fetchDojoBySlug = async (slug: string): Promise<IDojo | null> => {
 
 export const fetchDojoByID = async (dojoId: number): Promise<IDojo | null> => {
   try {
-    const dojo = await getDB().query.dojos.findFirst({
-      where: eq(dojos.id, dojoId),
-    });
+    const dojo = findOne(
+      await dbService
+        .getDB()
+        .select()
+        .from(dojos)
+        .where(eq(dojos.id, dojoId))
+        .limit(1)
+        .execute()
+    );
 
     if (!dojo) {
       return null;
