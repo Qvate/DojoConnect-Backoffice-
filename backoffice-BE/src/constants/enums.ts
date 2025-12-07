@@ -8,3 +8,7 @@ export enum AppointmentType {
   Physical = "physical",
   Online = "online",
 }
+
+export enum NotificationType {
+  
+}

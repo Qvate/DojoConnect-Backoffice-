@@ -18,6 +18,8 @@ export const appConfigSchema = z.object({
   BACK_OFFICE_DB_USER: z.string().nonempty(),
   BACK_OFFICE_DB_PASSWORD: z.string(),
   BACK_OFFICE_DB_NAME: z.string().nonempty(),
+
+  FIREBASE_CRED_FILE_PATH: z.string().nonempty(),
 });
 
 // extract the inferred type
@@ -38,6 +40,8 @@ export const AppConfig: IAppConfig = {
   BACK_OFFICE_DB_USER: process.env.BACK_OFFICE_DB_USER || "",
   BACK_OFFICE_DB_PASSWORD: process.env.BACK_OFFICE_DB_PASSWORD || "",
   BACK_OFFICE_DB_NAME: process.env.BACK_OFFICE_DB_NAME || "",
+
+  FIREBASE_CRED_FILE_PATH: process.env.FIREBASE_CRED_FILE_PATH || "",
 };
 
 export default AppConfig;
