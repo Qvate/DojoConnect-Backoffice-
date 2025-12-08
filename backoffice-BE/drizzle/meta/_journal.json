@@ -15,6 +15,27 @@
       "when": 1765120407066,
       "tag": "0001_thick_meteorite",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1765131361770,
+      "tag": "0002_handy_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1765141550792,
+      "tag": "0003_charming_the_initiative",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1765194010749,
+      "tag": "0004_flimsy_mikhail_rasputin",
+      "breakpoints": true
     }
   ]
 }

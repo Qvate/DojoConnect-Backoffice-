@@ -20,6 +20,11 @@ export const appConfigSchema = z.object({
   BACK_OFFICE_DB_NAME: z.string().nonempty(),
 
   FIREBASE_CRED_FILE_PATH: z.string().nonempty(),
+
+  JWT_ACCESS_SECRET: z.string().nonempty(),
+  JWT_REFRESH_SECRET: z.string().nonempty(),
+
+  STRIPE_SECRET_KEY: z.string().nonempty(),
 });
 
 // extract the inferred type
@@ -42,6 +47,11 @@ export const AppConfig: IAppConfig = {
   BACK_OFFICE_DB_NAME: process.env.BACK_OFFICE_DB_NAME || "",
 
   FIREBASE_CRED_FILE_PATH: process.env.FIREBASE_CRED_FILE_PATH || "",
+
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || "",
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "",
+
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || "",
 };
 
 export default AppConfig;

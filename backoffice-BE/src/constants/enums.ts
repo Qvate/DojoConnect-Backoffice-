@@ -10,5 +10,21 @@ export enum AppointmentType {
 }
 
 export enum NotificationType {
-  
+  Event = "event",
+  Invitation = "invitation",
+  Message = "message",
+  SignUp = "signup",
+}
+
+export enum Role {
+  DojoAdmin = "dojo-admin",
+  Instructor = "instructor",
+  Parent = "parent",
+  Child = "child",
+}
+
+export enum StripePlans {
+  Trial = "trial",
+  Starter = "starter",
+  Pro = "pro",
 }

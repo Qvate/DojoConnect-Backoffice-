@@ -10,11 +10,11 @@ export async function fetchDojoBySlug(req: Request, res: Response) {
     throw new BadRequestException("Slug is required");
   }
 
-  const dojo = await dojosService.fetchDojoBySlug(req.params.slug);
+  const dojo = await dojosService.getOneDojoBySlug(req.params.slug);
 
   if (!dojo) {
-      throw new NotFoundException(`Dojo with slug ${slug} not found`);
-    }
+    throw new NotFoundException(`Dojo with slug ${slug} not found`);
+  }
 
   res.json(formatApiResponse({ data: dojo }));
 }

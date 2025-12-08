@@ -1,20 +1,21 @@
 import AppConfig from "../config/AppConfig";
 import nodemailer from "nodemailer";
+import { Role } from "../constants/enums";
 
-let transporter: any = null;
+let transporterInstance: any = null;
 
 export const getTransporter = () => {
-  if (transporter) {
-    return transporter;
+  if (transporterInstance) {
+    return transporterInstance;
   }
 
-  transporter = nodemailer.createTransport({
+  transporterInstance = nodemailer.createTransport({
     host: "smtp.zoho.com",
     port: 465,
     secure: true,
     auth: {
-      user: process.env.ZOHO_EMAIL || "hello@dojoconnect.app",
-      pass: process.env.ZOHO_PASSWORD || "Connectdojo1!",
+      user: AppConfig.ZOHO_EMAIL,
+      pass: AppConfig.ZOHO_PASSWORD,
     },
     connectionTimeout: 20000,
     greetingTimeout: 15000,
@@ -24,7 +25,7 @@ export const getTransporter = () => {
     tls: { servername: "smtp.zoho.com" },
   });
 
-  return transporter;
+  return transporterInstance;
 };
 
 // 1. Appointment Request Confirmation Email
@@ -115,7 +116,7 @@ export const sendPhysicalAppointmentScheduled = async (
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await getTransporter().sendMail(mailOptions);
     console.log(`📧 Physical appointment scheduled email sent to ${to}`);
   } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
@@ -167,7 +168,7 @@ export const sendOnlineAppointmentScheduled = async (
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await getTransporter().sendMail(mailOptions);
     console.log(`📧 Online appointment scheduled email sent to ${to}`);
   } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
@@ -213,7 +214,7 @@ export const sendAppointmentCancellation = async (
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await getTransporter().sendMail(mailOptions);
     console.log(`📧 Appointment cancellation email sent to ${to}`);
   } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
@@ -260,7 +261,7 @@ export const sendOnlineAppointmentReschedule = async (
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await getTransporter().sendMail(mailOptions);
     console.log(`📧 Online appointment reschedule email sent to ${to}`);
   } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
@@ -268,7 +269,7 @@ export const sendOnlineAppointmentReschedule = async (
 };
 
 // 6. Appointment Reschedule Email - Physical
-export const sendPhysicalAppointmentReschedule= async (
+export const sendPhysicalAppointmentReschedule = async (
   to,
   parentName,
   newDate,
@@ -307,15 +308,15 @@ export const sendPhysicalAppointmentReschedule= async (
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await getTransporter().sendMail(mailOptions);
     console.log(`📧 Physical appointment reschedule email sent to ${to}`);
   } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
   }
-}
+};
 
 // 7. Trial Class Booking Confirmation Email
-export const sendTrialClassBookingConfirmation= async (
+export const sendTrialClassBookingConfirmation = async (
   to,
   parentName,
   className,
@@ -373,9 +374,46 @@ export const sendTrialClassBookingConfirmation= async (
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await getTransporter().sendMail(mailOptions);
     console.log(`📧 Trial class booking confirmation email sent to ${to}`);
   } catch (err: any) {
     console.error("❌ Error sending email:", err.message);
   }
-}
+};
+
+export const sendWelcomeEmail = async (
+  dest: string,
+  name: string,
+  role: Role
+) => {
+  try {
+    let subject, body;
+
+    if (role === Role.DojoAdmin) {
+      subject = "Welcome to Dojo Connect - Your Admin Dashboard is Ready";
+      body = `<p>Hi <strong>${name}</strong>,</p>
+                    <p>Welcome to Dojo Connect! Your admin access has been successfully activated.</p>
+                    <p>As an admin, you now have full control to manage your dojo.</p>
+                    <p>Warm regards,<br>The Dojo Connect Team</p>`;
+    } else {
+      subject = "Welcome to Dojo Connect";
+      body = `<p>Hi <strong>${name}</strong>,</p>
+                    <p>Your account has been successfully created as a <strong>${role}</strong>.</p>
+                    <p>You can now login and explore your dashboard.</p>
+                    <p>– The Dojo Connect Team</p>`;
+    }
+
+    const mailOptions = {
+      from: '"Dojo Connect" <support@dojoconnect.app>',
+      to: dest,
+      subject: subject,
+      html: body,
+      charset: "UTF-8",
+    };
+
+    await getTransporter().sendMail(mailOptions);
+  } catch (error: any) {
+    console.error(`Welcome email failed to ${dest}: ${error.message}`);
+    // Log the error, mirroring PHP's error_log
+  }
+};

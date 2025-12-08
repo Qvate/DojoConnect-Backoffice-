@@ -1,4 +1,5 @@
 import { Router } from "express";
+import authRouter from "./auth.routes";
 import dojosRouter from "./dojos.route";
 import appointmentsRouter from "./appointments.route";
 
@@ -8,6 +9,7 @@ router.get("/", (_req, res) => {
   res.json({ message: "Server is running" });
 });
 
+router.use('/auth', authRouter)
 router.use("/dojos", dojosRouter);
 router.use('/appointments', appointmentsRouter)
 

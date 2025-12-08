@@ -2,15 +2,15 @@ import { z } from "zod";
 import { AppointmentStatus, AppointmentType } from "../constants/enums";
 
 export const CreateAppointmentSchema = z.object({
-  dojo_id: z.number(),
+  dojo_id: z.string().trim().nonempty(),
 
-  parent_name: z.string().min(1, "parent_name is required"),
-  email_address: z.string().email("Invalid email_address"),
+  parent_name: z.string().trim().min(1, "parent_name is required"),
+  email_address: z.string().trim().email("Invalid email_address"),
   contact_details: z.string().min(1, "contact_details is required"),
 
-  reason_for_consultation: z.string().optional().nullable(),
-  preferred_contact_method: z.string().optional().nullable(),
-  preferred_time_range: z.string().optional().nullable(),
+  reason_for_consultation: z.string().trim().optional().nullable(),
+  preferred_contact_method: z.string().trim().optional().nullable(),
+  preferred_time_range: z.string().trim().optional().nullable(),
 
   number_of_children: z
     .union([z.string(), z.number()])
@@ -22,7 +22,7 @@ export const CreateAppointmentSchema = z.object({
       return Number.isFinite(num) ? num : null;
     }),
 
-  additional_notes: z.string().optional().nullable(),
+  additional_notes: z.string().trim().optional().nullable(),
 
   consent_acknowledged: z
     .union([z.boolean(), z.string(), z.number()])
@@ -32,10 +32,13 @@ export const CreateAppointmentSchema = z.object({
       return 0;
     }),
 
-  appointment_type: z.nativeEnum(AppointmentType)
-    .optional().default(AppointmentType.Online),
+  appointment_type: z
+    .nativeEnum(AppointmentType)
+    .optional()
+    .default(AppointmentType.Online),
 
-  status: z.nativeEnum(AppointmentStatus).optional().default(AppointmentStatus.Pending),
+  status: z
+    .nativeEnum(AppointmentStatus)
+    .optional()
+    .default(AppointmentStatus.Pending),
 });
-
-
