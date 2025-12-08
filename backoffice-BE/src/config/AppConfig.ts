@@ -1,5 +1,6 @@
 import { z } from "zod";
 import dotenv from "dotenv";
+import { NodeEnv } from "../constants/enums";
 
 dotenv.config();
 
@@ -32,7 +33,7 @@ export type IAppConfig = z.infer<typeof appConfigSchema>;
 
 export const AppConfig: IAppConfig = {
   PORT: process.env.PORT ? parseInt(process.env.PORT) : 5002,
-  NODE_ENV: process.env.NODE_ENV || "development",
+  NODE_ENV: process.env.NODE_ENV || NodeEnv.Development,
   ZOHO_EMAIL: process.env.ZOHO_EMAIL || "",
   ZOHO_PASSWORD: process.env.ZOHO_PASSWORD || "",
 
