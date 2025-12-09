@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "2f338c95-f58f-462e-bf03-dbe034f05491",
-  "prevId": "3ac411ac-4574-4406-90a6-32636d398e66",
+  "id": "ba8b425f-bf49-4b29-b47b-dbb67faf3829",
+  "prevId": "2f338c95-f58f-462e-bf03-dbe034f05491",
   "tables": {
     "admin": {
       "name": "admin",
@@ -886,7 +886,7 @@
           "name": "tagline",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "created_at": {
@@ -2127,9 +2127,8 @@
           "name": "role",
           "type": "enum('dojo-admin','instructor','parent','child')",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'child'"
+          "notNull": true,
+          "autoincrement": false
         },
         "balance": {
           "name": "balance",

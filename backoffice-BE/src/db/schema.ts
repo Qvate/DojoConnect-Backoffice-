@@ -199,7 +199,7 @@ export const dojos = mysqlTable(
       .references(() => users.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 255 }).notNull(),
     tag: varchar("tag", { length: 50 }).notNull(),
-    tagline: varchar("tagline", { length: 255 }),
+    tagline: varchar("tagline", { length: 255 }).notNull(),
     createdAt: timestamp("created_at", { mode: "string" })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
