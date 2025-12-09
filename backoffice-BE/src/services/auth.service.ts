@@ -27,6 +27,7 @@ import { Role } from "../constants/enums";
 import { returnFirst } from "../utils/db.utils";
 import { UserDTO } from "../dtos/user.dtos";
 import { AuthResponseDTO } from "../dtos/auth.dto";
+import { formatDateForMySQL } from "../utils/date.utils";
 
 export type INewRefreshToken = InferInsertModel<typeof refreshTokens>;
 export type IRefreshToken = InferSelectModel<typeof refreshTokens>;
@@ -266,7 +267,7 @@ export const registerUser = async (
       let stripeCustomerId: string | null = null;
       let stripeSubscriptionId: string | null = null;
       let subscriptionStatus: string | null = null;
-      let trialEndsAt: string | null = null;
+      let trialEndsAt: Date | null = null;
 
       if (userDTO.role === Role.DojoAdmin) {
         try {
@@ -288,7 +289,7 @@ export const registerUser = async (
 
           // Convert Stripe timestamp (seconds) to ISO string
           trialEndsAt = stripeSubscription.trial_end
-            ? new Date(stripeSubscription.trial_end * 1000).toISOString()
+            ? new Date(stripeSubscription.trial_end * 1000)
             : null;
         } catch (err: any) {
           console.error("Stripe API error:", err.message);
@@ -311,7 +312,7 @@ export const registerUser = async (
           stripeCustomerId,
           stripeSubscriptionId,
           subscriptionStatus,
-          trialEndsAt,
+          trialEndsAt: trialEndsAt ? formatDateForMySQL(trialEndsAt) : null,
         },
         tx
       );
