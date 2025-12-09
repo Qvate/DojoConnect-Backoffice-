@@ -1,0 +1,37 @@
+name: Run API Tests
+
+on:
+    pull_request:
+        branches:
+            - main
+            - develop
+            - staging
+            - production
+        paths:
+            - "backoffice-BE/**" # 🚀 Only runs when backend folder changes
+    workflow_dispatch:
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+                  cache: "npm"
+                  cache-dependency-path: backoffice-BE/package-lock.json
+
+            - name: Install & Build (Backend only)
+              working-directory: backoffice-BE
+              run: |
+                  npm install
+                  npm run build 
+
+            - name: Run tests
+              working-directory: backoffice-BE
+              run: npm test
