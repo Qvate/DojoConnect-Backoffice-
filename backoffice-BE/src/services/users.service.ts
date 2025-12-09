@@ -50,7 +50,7 @@ export const getOneUserByID = async ({
     try {
       return await getOneUser({ whereClause: eq(users.id, userId) }, tx);
     } catch (err: any) {
-      console.error(`Error fetching dojo by ID: ${userId}`, { err });
+      console.error(`Error fetching user by ID: ${userId}`, { err });
       throw new Error(err);
     }
   };
@@ -74,7 +74,7 @@ export const getOneUserByEmail = async ({
         tx
       );
     } catch (err: any) {
-      console.error(`Error fetching dojo by Email: ${email}`, { err });
+      console.error(`Error fetching user by Email: ${email}`, { err });
       throw new Error(err);
     }
   };
@@ -83,14 +83,15 @@ export const getOneUserByEmail = async ({
 };
 
 export const getOneUserByUserName = async (
-  username: string,
-  txInstance?: Transaction
+  {username, txInstance}:
+  {username: string,
+  txInstance?: Transaction}
 ): Promise<IUser | null> => {
   const execute = async (tx: Transaction) => {
     try {
-      return getOneUser({ whereClause: eq(users.username, username) }, tx);
+      return await getOneUser({ whereClause: eq(users.username, username) }, tx);
     } catch (err: any) {
-      console.error(`Error fetching dojo by Username: ${username}`, { err });
+      console.error(`Error fetching user by Username: ${username}`, { err });
       throw new Error(err);
     }
   };

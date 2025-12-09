@@ -9,9 +9,9 @@ export const LoginSchema = z.object({
 });
 
 export const RegisterUserSchema = z.object({
-  name: z.string().trim().nonempty(),
-
   fullName: z.string().trim().nonempty(),
+
+  username: z.string().trim().nonempty(),
 
   email: z.string().trim().email().nonempty(),
 

@@ -1,201 +1,322 @@
 import * as usersService from "./users.service";
-import { createDrizzleDbSpies, DbServiceSpies } from "../tests/spies/drizzle-db.spies";
+import {
+  createDrizzleDbSpies,
+  DbServiceSpies,
+} from "../tests/spies/drizzle-db.spies";
 import { users } from "../db/schema";
 import { buildUserMock } from "../tests/factories/user.factory";
 import { eq } from "drizzle-orm";
 
 describe("Users Service", () => {
-    let mockExecute: jest.Mock;
-    let mockSelect: jest.Mock;
-    let mockFrom: jest.Mock;
-    let mockLimit: jest.Mock;
-    let dbSpies : DbServiceSpies;
-    
-      beforeEach(() => {
-        dbSpies = createDrizzleDbSpies();
-    
-        mockExecute = dbSpies.mockExecute;
-        mockSelect = dbSpies.mockSelect;
-        mockFrom = dbSpies.mockFrom;
-        mockLimit = dbSpies.mockLimit;
-      });
-    
-      afterEach(() => {
-        jest.clearAllMocks();
-      });
+  let mockExecute: jest.Mock;
+  let mockSelect: jest.Mock;
+  let mockFrom: jest.Mock;
+  let mockLimit: jest.Mock;
+  let dbSpies: DbServiceSpies;
+  let logErrorSpy: jest.SpyInstance;
 
-    describe("getOneUser", () => {
-      it("should return null when no user is found", async () => {
-        mockExecute.mockResolvedValue([]);
+  beforeEach(() => {
+    dbSpies = createDrizzleDbSpies();
 
-        const result = await usersService.getOneUser({ whereClause: { id: 1 } });
+    mockExecute = dbSpies.mockExecute;
+    mockSelect = dbSpies.mockSelect;
+    mockFrom = dbSpies.mockFrom;
+    mockLimit = dbSpies.mockLimit;
 
-        expect(mockSelect).toHaveBeenCalled();
-        expect(mockFrom).toHaveBeenCalledWith(users);
-        expect(mockLimit).toHaveBeenCalledWith(1);
-        expect(result).toBeNull();
-      });
+    logErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
 
-      it("should return user WITHOUT passwordHash when withPassword = false (default)", async () => {
-        const mockUser = buildUserMock({
-          id: "1",
-          name: "John",
-          passwordHash: "hashed_pw",
-        });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-        const {passwordHash, ...userWithoutPassword} = mockUser;
+  describe("getOneUser", () => {
+    it("should return null when no user is found", async () => {
+      mockExecute.mockResolvedValue([]);
 
+      const result = await usersService.getOneUser({ whereClause: { id: 1 } });
 
-        mockExecute.mockResolvedValue([mockUser]);
-
-        const result = await  usersService.getOneUser(
-          { whereClause: { id: 1 }, withPassword: false },
-        );
-
-        expect(result).toEqual(userWithoutPassword);
-        expect(result).not.toHaveProperty("passwordHash");
-      });
-
-      it("returns user WITH passwordHash when withPassword = true", async () => {
-        const mockUser = buildUserMock({
-          id: "1",
-          name: "John",
-          passwordHash: "hashed_pw",
-        });
-
-        mockExecute.mockResolvedValue([mockUser]);
-
-        const result = await usersService.getOneUser(
-          { whereClause: { id: 1 }, withPassword: true },
-        );
-
-        expect(result).toEqual(mockUser);
-        expect(result).toHaveProperty("passwordHash");
-      });
-
-      it("calls dbService.runInTransaction when no transaction instance is provided", async () => {
-        const mockUser = buildUserMock({ id: "1", passwordHash: "hash" });
-        mockExecute.mockResolvedValue([mockUser]);
-
-        const result = await usersService.getOneUser({ whereClause: { id: 1 } });
-
-        expect(dbSpies.runInTransactionSpy).toHaveBeenCalled();
-      });
-
-      it("correctly builds the SQL query with provided whereClause", async () => {
-        const mockUser = buildUserMock({ id: "1", passwordHash: "pw" });
-        mockExecute.mockResolvedValue([mockUser]);
-
-        await usersService.getOneUser({ whereClause: { email: "test@example.com" } });
-
-        expect(dbSpies.mockWhere).toHaveBeenCalledWith({ email: "test@example.com" });
-        expect(mockLimit).toHaveBeenCalledWith(1);
-      });
+      expect(mockSelect).toHaveBeenCalled();
+      expect(mockFrom).toHaveBeenCalledWith(users);
+      expect(mockLimit).toHaveBeenCalledWith(1);
+      expect(result).toBeNull();
     });
 
-    describe("getOneUserByEmail", () => {
-      let getOneUserSpy: jest.SpyInstance;
-
-      beforeEach(() => {
-        getOneUserSpy = jest.spyOn(usersService, "getOneUser");
+    it("should return user WITHOUT passwordHash when withPassword = false (default)", async () => {
+      const mockUser = buildUserMock({
+        id: "1",
+        name: "John",
+        passwordHash: "hashed_pw",
       });
 
-      afterEach(() => {
-          jest.clearAllMocks();
+      const { passwordHash, ...userWithoutPassword } = mockUser;
+
+      mockExecute.mockResolvedValue([mockUser]);
+
+      const result = await usersService.getOneUser({
+        whereClause: { id: 1 },
+        withPassword: false,
       });
 
-      it("should call getOneUser with correct whereClause and return user", async () => {
-        const email = "test@example.com";
-        const mockUser = buildUserMock({ email });
+      expect(result).toEqual(userWithoutPassword);
+      expect(result).not.toHaveProperty("passwordHash");
+    });
 
-        getOneUserSpy.mockResolvedValue(mockUser);
-
-        const result = await usersService.getOneUserByEmail({ email });
-
-        expect(getOneUserSpy).toHaveBeenCalledWith(
-          { whereClause: eq(users.email, email), withPassword: false },
-          expect.anything() // tx
-        );
-        expect(result).toEqual(mockUser);
+    it("returns user WITH passwordHash when withPassword = true", async () => {
+      const mockUser = buildUserMock({
+        id: "1",
+        name: "John",
+        passwordHash: "hashed_pw",
       });
 
-      it("should return null when no user is found", async () => {
-        const email = "missing@example.com";
+      mockExecute.mockResolvedValue([mockUser]);
 
-        getOneUserSpy.mockResolvedValue(null);
-
-        const result = await usersService.getOneUserByEmail({ email });
-
-        expect(result).toBeNull();
+      const result = await usersService.getOneUser({
+        whereClause: { id: 1 },
+        withPassword: true,
       });
 
-      it("should request password when withPassword = true", async () => {
-        const email = "secure@example.com";
-        const mockUser = buildUserMock({ email, passwordHash: "hash123" });
+      expect(result).toEqual(mockUser);
+      expect(result).toHaveProperty("passwordHash");
+    });
 
-        getOneUserSpy.mockResolvedValue(mockUser);
+    it("calls dbService.runInTransaction when no transaction instance is provided", async () => {
+      const mockUser = buildUserMock({ id: "1", passwordHash: "hash" });
+      mockExecute.mockResolvedValue([mockUser]);
 
-        const result = await usersService.getOneUserByEmail({
-          email,
-          withPassword: true,
-        });
+      const result = await usersService.getOneUser({ whereClause: { id: 1 } });
 
-        expect(getOneUserSpy).toHaveBeenCalledWith(
-          { whereClause: eq(users.email, email), withPassword: true },
-          expect.anything()
-        );
+      expect(dbSpies.runInTransactionSpy).toHaveBeenCalled();
+    });
 
-        expect(result).toEqual(mockUser);
-        expect(result?.passwordHash).toBe("hash123");
+    it("correctly builds the SQL query with provided whereClause", async () => {
+      const mockUser = buildUserMock({ id: "1", passwordHash: "pw" });
+      mockExecute.mockResolvedValue([mockUser]);
+
+      await usersService.getOneUser({
+        whereClause: { email: "test@example.com" },
       });
 
-      it("should call dbService.runInTransaction when no txInstance is supplied", async () => {
-        const email = "user@example.com";
-        const mockUser = buildUserMock({ email });
+      expect(dbSpies.mockWhere).toHaveBeenCalledWith({
+        email: "test@example.com",
+      });
+      expect(mockLimit).toHaveBeenCalledWith(1);
+    });
+  });
 
-        getOneUserSpy.mockResolvedValue(mockUser);
+  describe("getOneUserByID", () => {
+    let getOneUserSpy: jest.SpyInstance;
 
-        const result = await usersService.getOneUserByEmail({ email });
+    beforeEach(() => {
+      getOneUserSpy = jest.spyOn(usersService, "getOneUser");
+    });
 
-        expect(dbSpies.runInTransactionSpy).toHaveBeenCalled();
-        expect(result).toEqual(mockUser);
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should call getOneUser with correct whereClause and return user", async () => {
+      const id = "123";
+      const mockUser = buildUserMock({ id });
+
+      getOneUserSpy.mockResolvedValue(mockUser);
+
+      const result = await usersService.getOneUserByID({ userId: id });
+
+      expect(getOneUserSpy).toHaveBeenCalledWith(
+        { whereClause: eq(users.id, id) },
+        expect.anything() // tx
+      );
+      expect(result).toEqual(mockUser);
+    });
+
+    it("should return null when no user is found", async () => {
+      const userId = "non-existent-id";
+
+      getOneUserSpy.mockResolvedValue(null);
+
+      const result = await usersService.getOneUserByID({ userId });
+
+      expect(result).toBeNull();
+    });
+
+    it("should log error and throw when underlying getOneUser throws", async () => {
+      const userId = "fail@example.com";
+
+      const testError = new Error("DB failed");
+      getOneUserSpy.mockRejectedValueOnce(testError);
+
+      logErrorSpy.mockImplementation(() => {});
+
+      await expect(usersService.getOneUserByID({ userId })).rejects.toThrow(
+        "DB failed"
+      );
+
+      expect(logErrorSpy).toHaveBeenCalledWith(
+        `Error fetching user by ID: ${userId}`,
+        { err: testError }
+      );
+    });
+  });
+
+  describe("getOneUserByEmail", () => {
+    let getOneUserSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      getOneUserSpy = jest.spyOn(usersService, "getOneUser");
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should call getOneUser with correct whereClause and return user", async () => {
+      const email = "test@example.com";
+      const mockUser = buildUserMock({ email });
+
+      getOneUserSpy.mockResolvedValue(mockUser);
+
+      const result = await usersService.getOneUserByEmail({ email });
+
+      expect(getOneUserSpy).toHaveBeenCalledWith(
+        { whereClause: eq(users.email, email), withPassword: false },
+        expect.anything() // tx
+      );
+      expect(result).toEqual(mockUser);
+    });
+
+    it("should return null when no user is found", async () => {
+      const email = "missing@example.com";
+
+      getOneUserSpy.mockResolvedValue(null);
+
+      const result = await usersService.getOneUserByEmail({ email });
+
+      expect(result).toBeNull();
+    });
+
+    it("should request password when withPassword = true", async () => {
+      const email = "secure@example.com";
+      const mockUser = buildUserMock({ email, passwordHash: "hash123" });
+
+      getOneUserSpy.mockResolvedValue(mockUser);
+
+      const result = await usersService.getOneUserByEmail({
+        email,
+        withPassword: true,
       });
 
-      it("should NOT call dbService.runInTransaction when txInstance is supplied", async () => {
-        const email = "user@example.com";
-        const mockUser = buildUserMock({ email });
+      expect(getOneUserSpy).toHaveBeenCalledWith(
+        { whereClause: eq(users.email, email), withPassword: true },
+        expect.anything()
+      );
 
-        getOneUserSpy.mockResolvedValue(mockUser);
+      expect(result).toEqual(mockUser);
+      expect(result?.passwordHash).toBe("hash123");
+    });
 
-        const tx = dbSpies.mockTx;
+    it("should call dbService.runInTransaction when no txInstance is supplied", async () => {
+      const email = "user@example.com";
+      const mockUser = buildUserMock({ email });
 
-        await usersService.getOneUserByEmail({
-          email,
-          txInstance: tx,
-        });
+      getOneUserSpy.mockResolvedValue(mockUser);
 
-        expect(dbSpies.runInTransactionSpy).not.toHaveBeenCalled();
-        expect(getOneUserSpy).toHaveBeenCalled();
+      const result = await usersService.getOneUserByEmail({ email });
+
+      expect(dbSpies.runInTransactionSpy).toHaveBeenCalled();
+      expect(result).toEqual(mockUser);
+    });
+
+    it("should NOT call dbService.runInTransaction when txInstance is supplied", async () => {
+      const email = "user@example.com";
+      const mockUser = buildUserMock({ email });
+
+      getOneUserSpy.mockResolvedValue(mockUser);
+
+      const tx = dbSpies.mockTx;
+
+      await usersService.getOneUserByEmail({
+        email,
+        txInstance: tx,
       });
 
-      it("should log error and throw when underlying getOneUser throws", async () => {
-        const email = "fail@example.com";
+      expect(dbSpies.runInTransactionSpy).not.toHaveBeenCalled();
+      expect(getOneUserSpy).toHaveBeenCalled();
+    });
 
-        const testError = new Error("DB failed");
-        getOneUserSpy.mockRejectedValue(testError);
+    it("should log error and throw when underlying getOneUser throws", async () => {
+      const email = "fail@example.com";
 
-        const consoleSpy = jest
-          .spyOn(console, "error")
-          .mockImplementation(() => {});
+      const testError = new Error("DB failed");
+      getOneUserSpy.mockRejectedValue(testError);
 
-        await expect(usersService.getOneUserByEmail({ email })).rejects.toThrow(
-          "DB failed"
-        );
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
-        expect(consoleSpy).toHaveBeenCalledWith(
-          `Error fetching dojo by Email: ${email}`,
-          { err: testError }
-        );
-      });
-})
-})
+      await expect(usersService.getOneUserByEmail({ email })).rejects.toThrow(
+        "DB failed"
+      );
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        `Error fetching user by Email: ${email}`,
+        { err: testError }
+      );
+    });
+  });
+
+  describe("getOneUserByUsername", () => {
+    let getOneUserSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      getOneUserSpy = jest.spyOn(usersService, "getOneUser");
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should call getOneUser with correct whereClause and return user", async () => {
+      const username = "user-123";
+      const mockUser = buildUserMock({ username });
+
+      getOneUserSpy.mockResolvedValue(mockUser);
+
+      const result = await usersService.getOneUserByUserName({ username });
+
+      expect(getOneUserSpy).toHaveBeenCalledWith(
+        { whereClause: eq(users.username, username) },
+        expect.anything() // tx
+      );
+      expect(result).toEqual(mockUser);
+    });
+
+    it("should return null when no user is found", async () => {
+      const username = "non-existent-username";
+
+      getOneUserSpy.mockResolvedValue(null);
+
+      const result = await usersService.getOneUserByUserName({ username });
+
+      expect(result).toBeNull();
+    });
+
+    it("should log error and throw when underlying getOneUser throws", async () => {
+      const username = "failure";
+
+      const testError = new Error("DB failed");
+      getOneUserSpy.mockRejectedValueOnce(testError);
+
+      logErrorSpy.mockImplementation(() => {});
+
+      await expect(usersService.getOneUserByUserName({ username })).rejects.toThrow(
+        "DB failed"
+      );
+
+      expect(logErrorSpy).toHaveBeenCalledWith(
+        `Error fetching user by Username: ${username}`,
+        { err: testError }
+      );
+    });
+  });
+});

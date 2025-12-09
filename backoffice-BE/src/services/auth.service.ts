@@ -216,7 +216,10 @@ export const registerUser = async (
             email: userDTO.email,
             txInstance: tx,
           }),
-          userService.getOneUserByUserName(userDTO.fullName, tx),
+          userService.getOneUserByUserName({
+            username: userDTO.username,
+            txInstance: tx,
+          }),
         ]);
 
       if (existingUserWithEmail) {
@@ -240,7 +243,7 @@ export const registerUser = async (
         try {
           // Stripe Customer & Subscription
           const stripeCustomer = await stripeService.createCustomers(
-            userDTO.name,
+            userDTO.fullName,
             userDTO.email,
             userDTO.paymentMethod
           );
@@ -268,8 +271,8 @@ export const registerUser = async (
 
       const newUser = await userService.saveUser(
         {
-          name: userDTO.name,
-          username: userDTO.fullName,
+          name: userDTO.fullName,
+          username: userDTO.username,
           email: userDTO.email,
           passwordHash: hashedPassword,
           role: userDTO.role,
@@ -312,7 +315,7 @@ export const registerUser = async (
       try {
         await mailerService.sendWelcomeEmail(
           userDTO.email,
-          userDTO.name,
+          userDTO.fullName,
           userDTO.role
         );
       } catch (err) {

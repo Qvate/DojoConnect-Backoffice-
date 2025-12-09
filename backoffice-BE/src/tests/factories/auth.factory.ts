@@ -5,8 +5,8 @@ export const buildRegisterUserDTOMock = (
   overrides?: Partial<RegisterUserDTO>
 ): RegisterUserDTO => {
   return {
-    name: "John",
-    fullName: "John Doe",
+    fullName: "John",
+    username: "John Doe",
     email: "john.doe@example.com",
     password: "Password123!",
     role: Role.DojoAdmin, // must be a valid Role enum value
