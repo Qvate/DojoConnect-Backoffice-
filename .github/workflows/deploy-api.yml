@@ -69,7 +69,7 @@ jobs:
           port: ${{ secrets.CPANEL_SSH_PORT }}
           script: |
             cd ${{ secrets.BACK_OFFICE_API_CPANEL_DEPLOY_PATH }}
-            npm install --production
+            npm install --omit=dev
             mkdir -p tmp
             touch tmp/restart.txt
             echo "Restarted Node.js app!"
