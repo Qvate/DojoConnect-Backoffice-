@@ -30,3 +30,18 @@ export const loginUser = async (req: Request, res: Response) => {
 
   res.json(formatApiResponse({ data: result, message: "Login successful" }));
 };
+
+export const refreshUserToken = async (req: Request, res: Response) => {
+  const userIp = req.ip;
+  const userAgent = req.headers["user-agent"];
+
+  const result = await authService.refreshUserToken({
+    token: req.body.refreshToken!,
+    userIp,
+    userAgent,
+  });
+
+  res.json(
+    formatApiResponse({ data: result, message: "Authentication successful" })
+  );
+};

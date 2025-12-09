@@ -108,8 +108,8 @@ export const generateAuthTokens = async ({
     // 2. Hash refresh token for storage
     const hashedRefreshToken = hashToken(refreshToken);
 
-    // 3. Store refresh token with expiry (e.g., 7 days)
-    const expiresAt = addDays(new Date(), 7);
+    // 3. Store refresh token with expiry (e.g., 30 days)
+    const expiresAt = addDays(new Date(), 30);
 
     await saveRefreshToken(
       {
@@ -176,8 +176,8 @@ export const refreshUserToken = async ({
   txInstance,
 }: {
   token: string;
-  userIp: string;
-  userAgent: string;
+  userIp?: string;
+  userAgent?: string;
   txInstance?: Transaction;
 }): Promise<AuthResponse> => {
   const execute = async (tx: Transaction) => {

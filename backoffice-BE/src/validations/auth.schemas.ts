@@ -8,6 +8,11 @@ export const LoginSchema = z.object({
   fcmToken: z.string().trim().optional().nullable(),
 });
 
+export const RefreshTokenSchema = z.object({
+  refreshToken: z.string().trim().nonempty(),
+});
+
+
 export const RegisterUserSchema = z.object({
   fullName: z.string().trim().nonempty(),
 
@@ -31,3 +36,5 @@ export const RegisterUserSchema = z.object({
 
 export type RegisterUserDTO = z.infer<typeof RegisterUserSchema>;
 export type LoginDTO = z.infer<typeof LoginSchema>;
+export type RefreshTokenDTO = z.infer<typeof RefreshTokenSchema>;
+
