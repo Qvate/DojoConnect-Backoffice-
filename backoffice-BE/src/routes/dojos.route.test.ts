@@ -22,8 +22,7 @@ describe("Dojo Routes", () => {
     it("should return a 200 status and the dojo data if the slug exists", async () => {
       // Arrange: Mock the database response for a found dojo
       const mockDojo = buildDojoMock({
-        id: 1,
-        dojoTag: "test-dojo"
+        tag: "test-dojo"
       });
 
       mockExecute.mockResolvedValue([mockDojo]);
