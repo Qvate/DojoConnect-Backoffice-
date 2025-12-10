@@ -622,6 +622,47 @@ describe("Auth Service", () => {
       });
     });
   });
+
+  describe("isUsernameAvailable", () => {
+    it("should return false if username is taken", async () => {
+      getOneUserByUsernameSpy.mockResolvedValue(buildUserMock());
+
+      const result = await authService.isUsernameAvailable({
+        username: "taken_user",
+      });
+
+      expect(result).toBe(false);
+      expect(getOneUserByUsernameSpy).toHaveBeenCalledWith({
+        username: "taken_user",
+        txInstance: expect.anything(),
+      });
+    });
+
+    it("should return true if username is available", async () => {
+      getOneUserByUsernameSpy.mockResolvedValue(null);
+
+      const result = await authService.isUsernameAvailable({
+        username: "new_user",
+      });
+
+      expect(result).toBe(true);
+    });
+
+    it("should use provided transaction instance", async () => {
+      getOneUserByUsernameSpy.mockResolvedValue(null);
+
+      await authService.isUsernameAvailable({
+        username: "test",
+        txInstance: dbSpies.mockTx,
+      });
+
+      expect(dbService.runInTransaction).not.toHaveBeenCalled();
+      expect(getOneUserByUsernameSpy).toHaveBeenCalledWith({
+        username: "test",
+        txInstance: dbSpies.mockTx,
+      });
+    });
+  });
 });
 
 const impoev = `This test suite provides a solid foundation for your authentication service. It uses Jest's mocking capabilities to isolate the service and test its logic in a controlled environment, ensuring each part works as expected. <!--

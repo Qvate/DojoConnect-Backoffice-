@@ -45,6 +45,10 @@ export const RegisterUserSchema = z.object({
   dojoTagline: z.string().trim().nonempty(),
 });
 
+export const IsUsernameAvailableSchema = z.object({
+  username: z.string().trim().nonempty(),
+});
+
 export type RegisterUserDTO = z.infer<typeof RegisterUserSchema>;
 export type LoginDTO = z.infer<typeof LoginSchema>;
 export type RefreshTokenDTO = z.infer<typeof RefreshTokenSchema>;

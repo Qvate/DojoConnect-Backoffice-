@@ -403,3 +403,27 @@ export const logoutUser = async ({
 
   return txInstance ? execute(txInstance) : dbService.runInTransaction(execute);
 };
+
+export const isUsernameAvailable = async ({
+  username,
+  txInstance,
+}: {
+  username: string;
+  txInstance?: Transaction;
+}) => {
+  const execute = async (tx: Transaction) => {
+    const user = await userService.getOneUserByUserName({
+      username,
+      txInstance: tx,
+    });
+
+    if (user) {
+      return false;
+    }
+
+    return true;
+  };
+
+  return txInstance ?  execute(txInstance) : dbService.runInTransaction(execute);
+};
+

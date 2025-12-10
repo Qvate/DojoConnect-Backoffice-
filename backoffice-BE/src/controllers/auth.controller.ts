@@ -56,3 +56,10 @@ export const logoutUser = async (req: Request, res: Response) => {
 
   res.json(formatApiResponse({ data: undefined, message: "successful" }));
 };
+
+export const isUsernameAvailable = async (req: Request, res: Response) => {
+  const username = req.query.username as string;
+  const available = await authService.isUsernameAvailable({ username });
+
+  res.json(formatApiResponse({ data: {available} }));
+};
