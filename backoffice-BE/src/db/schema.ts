@@ -364,10 +364,19 @@ export const parents = mysqlTable(
   ]
 );
 
-export const passwordResets = mysqlTable("password_resets", {
-  email: varchar({ length: 255 }).notNull(),
-  token: varchar({ length: 64 }).notNull(),
-  expiresAt: datetime("expires_at", { mode: "string" }).notNull(),
+export const passwordResetOTPs = mysqlTable("password_reset_otps", {
+  id: varchar("id", { length: 64 })
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  userId: varchar("user_id", { length: 64 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  hashedOTP: varchar("hashed_otp", { length: 255 }).notNull(),
+  attempts: int("attempts").default(0).notNull(),
+  expiresAt: datetime("expires_at").notNull(),
+  used: boolean("used").default(false).notNull(),
+  blockedAt: datetime("blocked_at"), // Block after max attempts
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const sessions = mysqlTable(
