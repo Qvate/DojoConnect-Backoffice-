@@ -371,7 +371,7 @@ describe("Auth Service", () => {
     let hashPasswordSpy: jest.SpyInstance;
     let createStripeCustomerSpy: jest.SpyInstance;
     let createStripeSubscriptionSpy: jest.SpyInstance;
-    let saveDojoSpy: jest.SpyInstance;
+    let createDojoSpy: jest.SpyInstance;
     let setDefaultPaymentMethodSpy: jest.SpyInstance;
     let sendWelcomeEmailSpy: jest.SpyInstance;
 
@@ -394,8 +394,8 @@ describe("Auth Service", () => {
       setDefaultPaymentMethodSpy = jest
         .spyOn(userService, "setDefaultPaymentMethod")
         .mockResolvedValue();
-      saveDojoSpy = jest
-        .spyOn(dojosService, "saveDojo")
+      createDojoSpy = jest
+        .spyOn(dojosService, "createDojo")
         .mockResolvedValue(mockDojo.id);
       sendWelcomeEmailSpy = jest
         .spyOn(mailerService, "sendWelcomeEmail")
@@ -448,7 +448,7 @@ describe("Auth Service", () => {
         userDTO.paymentMethod,
         dbSpies.mockTx
       );
-      expect(saveDojoSpy).toHaveBeenCalledWith(
+      expect(createDojoSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: mockSavedUser.id,
           name: userDTO.dojoName,
@@ -496,7 +496,7 @@ describe("Auth Service", () => {
       expect(createStripeCustomerSpy).not.toHaveBeenCalled();
       expect(createStripeSubscriptionSpy).not.toHaveBeenCalled();
       expect(setDefaultPaymentMethodSpy).not.toHaveBeenCalled();
-      expect(saveDojoSpy).not.toHaveBeenCalled();
+      expect(createDojoSpy).not.toHaveBeenCalled();
       expect(saveUserSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           stripeCustomerId: null,

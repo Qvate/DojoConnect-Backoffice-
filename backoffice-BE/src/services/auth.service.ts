@@ -1,14 +1,7 @@
 // src/services/auth.service.ts
 import * as dbService from "../db";
-import {
-  passwordResetOTPs,
-} from "../db/schema";
-import {
-  and,
-  eq,
-  gt,
-  isNull,
-} from "drizzle-orm";
+import { passwordResetOTPs } from "../db/schema";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import {
   generateAccessToken,
   generateOTP,
@@ -159,10 +152,7 @@ export const revokeRefreshToken = async ({
     const hashedToken = hashToken(dto.refreshToken);
 
     // 1. Find the token in DB
-    const storedToken = await RefreshTokenRepository.getOne(
-      hashedToken,
-      tx
-    );
+    const storedToken = await RefreshTokenRepository.getOne(hashedToken, tx);
 
     if (
       !storedToken ||
@@ -318,7 +308,7 @@ export const registerUser = async (
           tx
         );
 
-        await dojosService.saveDojo(
+        await dojosService.createDojo(
           {
             userId: newUser.id,
             name: userDTO.dojoName,
