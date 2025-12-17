@@ -12,6 +12,16 @@ export const RefreshTokenSchema = z.object({
   refreshToken: z.string().trim().nonempty(),
 });
 
+export const PasswordSchema = z
+  .string()
+  .trim()
+  .min(8, "Password must be at least 8 characters")
+  .max(128, "Password is too long")
+  // at least one lowercase, one uppercase, one digit, one special char, no spaces
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|\\:;"'<>,.?/~`])\S+$/,
+    "Password must contain uppercase, lowercase, number, and special character; and contain no spaces"
+  );
 
 export const RegisterUserSchema = z.object({
   fullName: z.string().trim().nonempty(),
@@ -20,7 +30,7 @@ export const RegisterUserSchema = z.object({
 
   email: z.string().trim().email().nonempty(),
 
-  password: z.string().trim().nonempty(),
+  password: PasswordSchema,
 
   role: z.nativeEnum(Role),
 
@@ -34,7 +44,36 @@ export const RegisterUserSchema = z.object({
   dojoTagline: z.string().trim().nonempty(),
 });
 
+export const IsUsernameAvailableSchema = z.object({
+  username: z.string().trim().nonempty(),
+});
+
+export const FirebaseSignInSchema = z.object({
+  idToken: z.string().trim().nonempty(),
+  fcmToken: z.string().trim().optional().nullable(),
+});
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().trim().email(),
+});
+
+export const VerifyOtpSchema = z.object({
+  email: z.string().trim().email(),
+  otp: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "OTP must be exactly 6 digits"),
+});
+
+export const ResetPasswordSchema = z.object({
+  resetToken: z.string().trim().nonempty(),
+  newPassword: PasswordSchema
+})
+
 export type RegisterUserDTO = z.infer<typeof RegisterUserSchema>;
 export type LoginDTO = z.infer<typeof LoginSchema>;
 export type RefreshTokenDTO = z.infer<typeof RefreshTokenSchema>;
-
+export type FirebaseSignInDTO = z.infer<typeof FirebaseSignInSchema>;
+export type ForgotPasswordDTO = z.infer<typeof ForgotPasswordSchema>;
+export type VerifyOtpDTO = z.infer<typeof VerifyOtpSchema>;
+export type ResetPasswordDTO = z.infer<typeof ResetPasswordSchema>;

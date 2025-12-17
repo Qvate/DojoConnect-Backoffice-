@@ -1,7 +1,12 @@
-import { Role, StripePlans } from "../../constants/enums";
+import { Role, StripePlans, SupportedOAuthProviders } from "../../constants/enums";
 import { AuthResponseDTO, AuthResponseDTOParams } from "../../dtos/auth.dto";
+import { IOAuthAcct } from "../../repositories/oauth-providers.repository";
 import { INewRefreshToken, IRefreshToken } from "../../services/auth.service";
-import { LoginDTO, RegisterUserDTO } from "../../validations/auth.schemas";
+import {
+  LoginDTO,
+  RefreshTokenDTO,
+  RegisterUserDTO,
+} from "../../validations/auth.schemas";
 import { buildUserDtoMock } from "./user.factory";
 
 export const buildRegisterUserDTOMock = (
@@ -82,3 +87,25 @@ export const buildAuthResponseDTOMock = (
     })
   );
 };
+
+export const buildRefreshTokenDtoMock = (
+  overrides?: Partial<RefreshTokenDTO>
+): RefreshTokenDTO => {
+  return {
+    refreshToken: "refresh",
+    ...overrides,
+  };
+};
+
+export const buildOAuthAcctMock = (overrides?: Partial<IOAuthAcct>): IOAuthAcct => {
+  return {
+    id: "oauth-id",
+    userId: "user-1",
+    provider: SupportedOAuthProviders.Google,
+    providerUserId: "oauth-user-1",
+    profileData: {},
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ...overrides,
+  };
+}
