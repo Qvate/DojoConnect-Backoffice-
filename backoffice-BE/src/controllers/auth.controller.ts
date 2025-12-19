@@ -58,12 +58,26 @@ export const logoutUser = async (req: Request, res: Response) => {
   res.json(formatApiResponse({ data: undefined, message: "successful" }));
 };
 
-export const isUsernameAvailable = async (req: Request, res: Response) => {
-  const username = req.query.username as string;
+export const handleIsUsernameAvailable = async (
+  req: Request,
+  res: Response
+) => {
+  const username = req.params.username as string;
   const available = await authService.isUsernameAvailable({ username });
 
   res.json(formatApiResponse({ data: { available } }));
 };
+
+export const handleIsDojoTagAvailable = async (
+  req: Request,
+  res: Response
+) => {
+  const tag = req.params.tag as string;
+  const available = await authService.isDojoTagAvailable({ tag });
+
+  res.json(formatApiResponse({ data: { available } }));
+};
+
 
 export const handleFirebaseLogin = async (req: Request, res: Response) => {
   const userIp = req.ip;

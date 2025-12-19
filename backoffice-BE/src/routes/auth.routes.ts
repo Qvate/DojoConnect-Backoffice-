@@ -3,7 +3,7 @@ import { Router } from "express";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 
 import {
-  isUsernameAvailable,
+  handleIsUsernameAvailable,
   loginUser,
   logoutUser,
   refreshUserToken,
@@ -12,15 +12,14 @@ import {
   handleInitForgetPassword,
   handleVerifyOtp,
   handleResetPassword,
+  handleIsDojoTagAvailable,
 } from "../controllers/auth.controller";
 import {
   validateReqBody,
-  validateReqQuery,
 } from "../middlewares/validate.middleware";
 import {
   FirebaseSignInSchema,
   ForgotPasswordSchema,
-  IsUsernameAvailableSchema,
   LoginSchema,
   RefreshTokenSchema,
   RegisterDojoAdminSchema,
@@ -38,11 +37,11 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-const usernameAvailabilityRateLimiter = rateLimit({
+const checkAvailabilityRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // 10 requests per minute
   message: {
-    message: "Too many username checks. Please try again in a minute.",
+    message: "Too many availability checks. Please try again in a minute.",
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -89,7 +88,12 @@ const otpVerifyIpLimiter = rateLimit({
 
 const router = Router();
 
-router.post("/login", authLimiter, validateReqBody(LoginSchema), loginUser);
+router.post(
+  "/login",
+  // authLimiter,
+  validateReqBody(LoginSchema),
+  loginUser
+);
 router.post(
   "/register/dojo-admin",
   authLimiter,
@@ -106,10 +110,15 @@ router.post(
 );
 
 router.get(
-  "/username/availability",
-  usernameAvailabilityRateLimiter,
-  validateReqQuery(IsUsernameAvailableSchema),
-  isUsernameAvailable
+  "/availability/usernames/:username",
+  checkAvailabilityRateLimiter,
+  handleIsUsernameAvailable
+);
+
+router.get(
+  "/availability/dojo-tags/:tag",
+  checkAvailabilityRateLimiter,
+  handleIsDojoTagAvailable
 );
 
 router.post(

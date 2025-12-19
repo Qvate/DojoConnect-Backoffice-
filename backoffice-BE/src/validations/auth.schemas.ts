@@ -27,24 +27,15 @@ export const RegisterDojoAdminSchema = z.object({
   fullName: z.string().trim().nonempty(),
 
   email: z.string().trim().email().nonempty(),
-
   password: PasswordSchema,
-
-  role: z.nativeEnum(Role),
+  username: z.string().trim().nonempty(),
 
   referredBy: z.string().trim().optional().default(""),
 
-  plan: z.nativeEnum(StripePlans).optional().default(StripePlans.Trial),
-  paymentMethod: z.string().trim().nonempty(),
-
-  dojoUsername: z.string().trim().nonempty(),
+  plan: z.nativeEnum(StripePlans),
   dojoName: z.string().trim().nonempty(),
   dojoTag: z.string().trim().nonempty(),
   dojoTagline: z.string().trim().nonempty(),
-});
-
-export const IsUsernameAvailableSchema = z.object({
-  username: z.string().trim().nonempty(),
 });
 
 export const FirebaseSignInSchema = z.object({

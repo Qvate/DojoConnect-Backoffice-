@@ -13,7 +13,6 @@ export interface UserDTOParams {
   gender: string | null;
   city: string | null;
   street: string | null;
-  trialEndsAt: string | null;
   createdAt: string;
 }
 
@@ -30,7 +29,6 @@ export class UserDTO implements UserDTOParams {
   gender: string | null;
   city: string | null;
   street: string | null;
-  trialEndsAt: string | null;
   createdAt: string;
 
   constructor(params: UserDTOParams) {
@@ -46,7 +44,6 @@ export class UserDTO implements UserDTOParams {
     this.gender = params.gender;
     this.city = params.city;
     this.street = params.street;
-    this.trialEndsAt = params.trialEndsAt;
     this.createdAt = params.createdAt;
   }
 
@@ -64,7 +61,6 @@ export class UserDTO implements UserDTOParams {
       gender: this.gender,
       city: this.city,
       street: this.street,
-      trialEndsAt: this.trialEndsAt,
       createdAt: this.createdAt,
     };
   }

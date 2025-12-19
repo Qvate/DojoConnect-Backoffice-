@@ -5,6 +5,7 @@ import { Transaction } from "../db";
 
 export type IDojo = InferSelectModel<typeof dojos>;
 export type INewDojo = InferInsertModel<typeof dojos>;
+export type IUpdateDojo = Partial<Omit<INewDojo, "id" | "createdAt">>;
 
 export class DojoRepository {
   static async getOne(
@@ -18,11 +19,11 @@ export class DojoRepository {
     return dojo || null;
   }
 
-  static async getOneBySlug(
-    slug: string,
+  static async getOneByTag(
+    tag: string,
     tx: Transaction
   ): Promise<IDojo | null> {
-    return await this.getOne(eq(dojos.tag, slug), tx);
+    return await this.getOne(eq(dojos.tag, tag), tx);
   }
 
   static async getOneByID(
@@ -32,16 +33,6 @@ export class DojoRepository {
     return await this.getOne(eq(dojos.id, dojoId), tx);
   }
 
-  static getOneByUserName = async ({
-    username,
-    tx,
-  }: {
-    username: string;
-    tx: Transaction;
-  }): Promise<IDojo | null> => {
-    return await this.getOne(eq(dojos.username, username), tx);
-  };
-
   static async create(newDojoDTO: INewDojo, tx: Transaction) {
     const [insertResult] = await tx
       .insert(dojos)
@@ -50,4 +41,16 @@ export class DojoRepository {
 
     return insertResult.id;
   }
+
+  static update = async ({
+    dojoId,
+    update,
+    tx,
+  }: {
+    dojoId: string;
+    update: IUpdateDojo;
+    tx: Transaction;
+  }) => {
+    await tx.update(dojos).set(update).where(eq(dojos.id, dojoId));
+  };
 }

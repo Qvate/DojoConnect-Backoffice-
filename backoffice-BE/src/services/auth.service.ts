@@ -14,13 +14,13 @@ import {
 } from "../utils/auth.utils";
 import * as dojosService from "./dojos.service";
 import * as mailerService from "./mailer.service";
-import * as stripeService from "./stripe.service";
 import * as userService from "./users.service";
 import * as firebaseService from "./firebase.service";
 import { addDays, addMinutes, isAfter } from "date-fns";
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   InternalServerErrorException,
   NotFoundException,
   TooManyRequestsException,
@@ -36,8 +36,11 @@ import {
   VerifyOtpDTO,
 } from "../validations/auth.schemas";
 import type { Transaction } from "../db";
-import { Role } from "../constants/enums";
-import { AuthResponseDTO } from "../dtos/auth.dto";
+import { DojoStatus, Role } from "../constants/enums";
+import {
+  AuthResponseDTO,
+  RegisterDojoAdminResponseDTO,
+} from "../dtos/auth.dto";
 import { formatDateForMySQL } from "../utils/date.utils";
 import { UserOAuthAccountsRepository } from "../repositories/oauth-providers.repository";
 import { PasswordResetOTPRepository } from "../repositories/password-reset-otps.repository";
@@ -45,6 +48,7 @@ import AppConstants from "../constants/AppConstants";
 import { RefreshTokenRepository } from "../repositories/refresh-token.repository";
 import { UserDTO } from "../dtos/user.dtos";
 import { IUser } from "../repositories/user.repository";
+import { SubscriptionService } from "./subscription.service";
 
 export const generateAuthTokens = async ({
   user,
@@ -220,102 +224,87 @@ export const registerDojoAdmin = async (
     userAgent?: string;
   },
   txInstance?: dbService.Transaction
-): Promise<AuthResponseDTO> => {
+): Promise<RegisterDojoAdminResponseDTO> => {
   const execute = async (tx: dbService.Transaction) => {
     try {
       // --- CHECK EMAIL & USERNAME (Transactional Querying) ---
-      const [existingUserWithEmail, existingDojoWithUsername] =
+      const [existingUserWithEmail, existingUserWithUsername, existingDojoWithTag] =
         await Promise.all([
           userService.getOneUserByEmail({
             email: dto.email,
             txInstance: tx,
           }),
-          dojosService.getOneDojoByUserName({
-            username: dto.dojoUsername,
+          userService.getOneUserByUserName({
+            username: dto.username,
             txInstance: tx,
           }),
+          dojosService.getOneDojoByTag(dto.dojoTag, tx)
         ]);
 
       if (existingUserWithEmail) {
         throw new ConflictException("Email already registered");
       }
 
-      if (existingDojoWithUsername) {
+      if (existingUserWithUsername) {
         throw new ConflictException("Username already taken");
+      }
+
+      if (existingDojoWithTag) {
+        throw new ConflictException("Dojo tag already exists")
       }
 
       // Generate Referral Code and Hash Password
       const referral_code = userService.generateReferralCode();
       const hashedPassword = await hashPassword(dto.password);
 
-      let stripeCustomerId: string | null = null;
-      let stripeSubscriptionId: string | null = null;
-      let subscriptionStatus: string | null = null;
-      let trialEndsAt: Date | null = null;
-
-      if (dto.role === Role.DojoAdmin) {
-        try {
-          // Stripe Customer & Subscription
-          const stripeCustomer = await stripeService.createCustomers(
-            dto.fullName,
-            dto.email,
-            dto.paymentMethod
-          );
-
-          const stripeSubscription = await stripeService.createSubscription(
-            stripeCustomer,
-            dto.plan
-          );
-
-          stripeCustomerId = stripeCustomer.id;
-          stripeSubscriptionId = stripeSubscription.id;
-          subscriptionStatus = stripeSubscription.status;
-
-          // Convert Stripe timestamp (seconds) to ISO string
-          trialEndsAt = stripeSubscription.trial_end
-            ? new Date(stripeSubscription.trial_end * 1000)
-            : null;
-        } catch (err: any) {
-          console.error("Stripe API error:", err.message);
-          throw new InternalServerErrorException(
-            `Stripe API error: ${err.message || ""}`
-          );
-        }
-      }
-
       const newUser = await userService.saveUser(
         {
           name: dto.fullName,
           email: dto.email,
           passwordHash: hashedPassword,
-          role: dto.role,
+          username: dto.username,
+          role: Role.DojoAdmin,
           referralCode: referral_code,
           referredBy: dto.referredBy,
-          stripeCustomerId,
-          stripeSubscriptionId,
-          subscriptionStatus,
-          trialEndsAt: trialEndsAt ? formatDateForMySQL(trialEndsAt) : null,
         },
         tx
       );
 
-      if (dto.role === Role.DojoAdmin) {
-        await userService.setDefaultPaymentMethod(
-          newUser,
-          dto.paymentMethod,
-          tx
-        );
+      let trialEndsAt: Date | null = addDays(new Date(), 14);
 
-        await dojosService.createDojo(
-          {
-            userId: newUser.id,
-            name: dto.dojoName,
-            tag: dto.dojoTag,
-            tagline: dto.dojoTagline,
-            activeSub: dto.plan,
-            username: dto.dojoUsername,
-          },
-          tx
+      const newDojo = await dojosService.createDojo(
+        {
+          userId: newUser.id,
+          name: dto.dojoName,
+          tag: dto.dojoTag,
+          tagline: dto.dojoTagline,
+          activeSub: dto.plan,
+          trialEndsAt,
+          status: DojoStatus.Registered,
+        },
+        tx
+      );
+
+      let stripeClientSecret: string | null = null;
+
+      try {
+        // Setup Dojo Admin Billing
+        const { clientSecret } =
+          await SubscriptionService.setupDojoAdminBilling({
+            dojo: newDojo,
+            user: newUser,
+            txInstance: tx,
+          });
+
+        stripeClientSecret = clientSecret;
+      } catch (err: any) {
+        if (err instanceof HttpException) {
+          throw err;
+        }
+
+        console.error("Stripe API error:", err.message);
+        throw new InternalServerErrorException(
+          `Stripe API error: ${err.message || ""}`
         );
       }
 
@@ -327,7 +316,11 @@ export const registerDojoAdmin = async (
       });
 
       try {
-        await mailerService.sendWelcomeEmail(dto.email, dto.fullName, dto.role);
+        await mailerService.sendWelcomeEmail(
+          dto.email,
+          dto.fullName,
+          Role.DojoAdmin
+        );
       } catch (err) {
         console.log(
           "[Consumed Error]: An Error occurred while trying to send email and notification. Error: ",
@@ -335,7 +328,8 @@ export const registerDojoAdmin = async (
         );
       }
 
-      return new AuthResponseDTO({
+      return new RegisterDojoAdminResponseDTO({
+        stripeClientSecret: stripeClientSecret!,
         accessToken,
         refreshToken,
         user: new UserDTO(newUser),
@@ -371,10 +365,30 @@ export const isUsernameAvailable = async ({
   txInstance?: Transaction;
 }) => {
   const execute = async (tx: Transaction) => {
-    const dojo = await dojosService.getOneDojoByUserName({
+    const user = await userService.getOneUserByUserName({
       username,
       txInstance: tx,
     });
+
+    if (user) {
+      return false;
+    }
+
+    return true;
+  };
+
+  return txInstance ? execute(txInstance) : dbService.runInTransaction(execute);
+};
+
+export const isDojoTagAvailable = async ({
+  tag,
+  txInstance,
+}: {
+  tag: string;
+  txInstance?: Transaction;
+}) => {
+  const execute = async (tx: Transaction) => {
+    const dojo = await dojosService.getOneDojoByTag(tag, tx);
 
     if (dojo) {
       return false;

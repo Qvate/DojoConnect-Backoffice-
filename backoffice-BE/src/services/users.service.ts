@@ -5,8 +5,12 @@ import type { Transaction } from "../db";
 import * as stripeService from "./stripe.service";
 
 import { NotFoundException } from "../core/errors";
-import { INewUser, IUpdateUser, IUser, UserRepository } from "../repositories/user.repository";
-
+import {
+  INewUser,
+  IUpdateUser,
+  IUser,
+  UserRepository,
+} from "../repositories/user.repository";
 
 export type IUserCard = InferSelectModel<typeof userCards>;
 export type INewUserCard = InferInsertModel<typeof userCards>;
@@ -15,11 +19,14 @@ export const getOneUser = async (
   {
     whereClause,
     withPassword = false,
-  }: { whereClause: SQL; withPassword?: boolean },
+  }: {
+    whereClause: SQL;
+    withPassword?: boolean;
+  },
   txInstance?: Transaction
 ): Promise<IUser | null> => {
   const execute = async (tx: Transaction) => {
-    let user = await UserRepository.getOne({ whereClause, withPassword,tx })
+    let user = await UserRepository.getOne({ whereClause, withPassword, tx });
 
     if (!user) {
       return null;
@@ -66,12 +73,33 @@ export const getOneUserByEmail = async ({
 }): Promise<IUser | null> => {
   const execute = async (tx: Transaction) => {
     try {
-      return await getOneUser(
-        { whereClause: eq(users.email, email), withPassword },
-        tx
-      );
+      return await getOneUser({
+        whereClause: eq(users.email, email),
+        withPassword,
+      }, tx);
     } catch (err: any) {
       console.error(`Error fetching user by Email: ${email}`, { err });
+      throw err;
+    }
+  };
+
+  return txInstance ? execute(txInstance) : dbService.runInTransaction(execute);
+};
+
+export const getOneUserByUserName = async ({
+  username,
+  txInstance,
+}: {
+  username: string;
+  txInstance?: Transaction;
+}): Promise<IUser | null> => {
+  const execute = async (tx: Transaction) => {
+    try {
+      return await getOneUser({
+        whereClause: eq(users.username, username),
+      }, tx);
+    } catch (err: any) {
+      console.error(`Error fetching dojo by Username: ${username}`, { err });
       throw err;
     }
   };
