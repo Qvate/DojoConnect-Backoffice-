@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import type { Mock, MockInstance } from "vitest";
 import Stripe from "stripe";
 import * as stripeService from "./stripe.service.js";
 import AppConfig from "../config/AppConfig.js";
@@ -9,41 +11,18 @@ import {
 } from "../tests/factories/stripe.factory.js";
 
 // Mock the entire stripe module
-const mockCustomersCreate = jest.fn();
-const mockSubscriptionsCreate = jest.fn();
-const mockPaymentMethodsRetrieve = jest.fn();
-
-jest.mock("stripe", () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      customers: {
-        create: mockCustomersCreate,
-      },
-      subscriptions: {
-        create: mockSubscriptionsCreate,
-      },
-      paymentMethods: {
-        retrieve: mockPaymentMethodsRetrieve,
-      },
-    };
-  });
-});
-
-// Mock AppConfig to ensure test keys are used
-jest.mock("../config/AppConfig.js", () => ({
-  STRIPE_SECRET_KEY: "test_stripe_secret_key",
-}));
-
-const MockedStripe = Stripe as jest.MockedClass<typeof Stripe>;
+const mockCustomersCreate = vi.fn();
+const mockSubscriptionsCreate = vi.fn();
+const mockPaymentMethodsRetrieve = vi.fn();
 
 describe("Stripe Service", () => {
-  let getStripeInstanceSpy: SpyInstance;
+  let getStripeInstanceSpy: MockInstance;
 
   beforeEach(() => {
     // Clear mock history before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
-    getStripeInstanceSpy = jest
+    getStripeInstanceSpy = vi
       .spyOn(stripeService, "getStripeInstance")
       .mockReturnValue({
         customers: {
@@ -57,11 +36,7 @@ describe("Stripe Service", () => {
         },
       } as any);
 
-    jest.replaceProperty(
-      AppConfig,
-      "STRIPE_SECRET_KEY",
-      "test_stripe_secret_key"
-    );
+      AppConfig.STRIPE_SECRET_KEY = "test_stripe_secret_key";
   });
 
   describe("createCustomers", () => {

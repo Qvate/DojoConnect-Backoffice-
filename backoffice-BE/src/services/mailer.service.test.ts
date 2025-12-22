@@ -1,31 +1,33 @@
+import { describe, it, expect, beforeEach, beforeAll, afterAll,vi } from "vitest";
+import type { Mock, MockInstance } from "vitest";
 import nodemailer from "nodemailer";
 import * as mailerService from "./mailer.service.js";
 import AppConfig from "../config/AppConfig.js";
 import { Role } from "../constants/enums.js";
 
 describe("Mailer Service", () => {
-  const sendMailMock = jest.fn();
+  const sendMailMock = vi.fn();
 
   beforeAll(() => {
     // Spy on createTransport to return a mock transporter.
     // This handles the singleton nature of getTransporter by ensuring
     // the first call returns our mock, which is then cached.
-    jest.spyOn(nodemailer, "createTransport").mockReturnValue({
+    vi.spyOn(nodemailer, "createTransport").mockReturnValue({
       sendMail: sendMailMock,
     } as any);
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Default mock implementation
     sendMailMock.mockResolvedValue({ messageId: "test-id" });
 
     // Mock AppConfig values
-    jest.replaceProperty(AppConfig, "ZOHO_EMAIL", "test@zoho.com");
+    AppConfig.ZOHO_EMAIL = "test@zoho.com";
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("sendWelcomeEmail", () => {
@@ -70,7 +72,7 @@ describe("Mailer Service", () => {
     });
 
     it("should log error if sending fails", async () => {
-      const consoleSpy = jest
+      const consoleSpy = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});
       sendMailMock.mockRejectedValueOnce(new Error("SMTP Error"));
@@ -108,7 +110,7 @@ describe("Mailer Service", () => {
     });
 
     it("should log error if sending fails", async () => {
-      const consoleSpy = jest
+      const consoleSpy = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});
       sendMailMock.mockRejectedValueOnce(new Error("Network Error"));

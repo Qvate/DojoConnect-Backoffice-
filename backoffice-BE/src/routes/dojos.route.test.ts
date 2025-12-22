@@ -1,5 +1,6 @@
 import request from "supertest";
-import { jest, describe, it, expect, afterEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import type { Mock, MockInstance } from "vitest";
 
 // Import the mock execute function so we can control its behavior in our tests.
 import { buildDojoMock } from "../tests/factories/dojos.factory.js";
@@ -7,7 +8,7 @@ import { createDrizzleDbSpies } from "../tests/spies/drizzle-db.spies.js";
 import app from "../app.js";
 
 describe("Dojo Routes", () => {
-  let mockExecute: jest.Mock;
+  let mockExecute: Mock;
 
   beforeEach(() => {
     const dbServiceSpy = createDrizzleDbSpies();
@@ -16,7 +17,7 @@ describe("Dojo Routes", () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("GET /api/dojos/slug/:slug", () => {

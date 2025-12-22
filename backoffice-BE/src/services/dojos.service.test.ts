@@ -1,21 +1,23 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import type { Mock, MockInstance } from "vitest";
 import { createDrizzleDbSpies } from "../tests/spies/drizzle-db.spies.js";
 import * as dojosService from "./dojos.service.js";
 import { buildDojoMock } from "../tests/factories/dojos.factory.js";
 
 describe("Dojo Service", () => {
-  let mockExecute: jest.Mock;
-  let logErrorSpy: SpyInstance;
+  let mockExecute: Mock;
+  let logErrorSpy: MockInstance;
 
   beforeEach(() => {
     const dbServiceSpy = createDrizzleDbSpies();
 
     mockExecute = dbServiceSpy.mockExecute;
 
-    logErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    logErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("fetchDojoByTag", () => {

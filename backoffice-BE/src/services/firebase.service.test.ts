@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import type { Mock, MockInstance } from "vitest";
 import { SupportedOAuthProviders } from "../constants/enums.js";
 import { UnauthorizedException } from "../core/errors/index.js";
 import { buildDecodedIdTokenMock } from "../tests/factories/firebase.factory.js";
@@ -5,18 +7,18 @@ import * as firebaseService from "./firebase.service.js";
 
 describe("Firebase Service", () => {
   describe("verifyFirebaseToken", () => {
-    let verifyIdTokenSpy: SpyInstance;
+    let verifyIdTokenSpy: MockInstance;
 
-    const mockVerifyIdToken = jest.fn();
+    const mockVerifyIdToken = vi.fn();
 
     beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       /**
        * Spy on getFirebaseAuth instead of mocking firebase-admin directly.
        * This keeps the test close to real behavior and avoids brittle mocks.
        */
-      verifyIdTokenSpy = jest
+      verifyIdTokenSpy = vi
         .spyOn(firebaseService, "getFirebaseAuth")
         .mockReturnValue({
           verifyIdToken: mockVerifyIdToken,

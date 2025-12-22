@@ -1,3 +1,6 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import type { Mock, MockInstance } from "vitest";
+
 import * as usersService from "./users.service.js";
 import * as stripeService from "./stripe.service.js";
 import {
@@ -17,12 +20,12 @@ import { buildStripePaymentMethodCardMock } from "../tests/factories/stripe.fact
 describe("Users Service", () => {
   const whereClause = eq(users.id, "1");
 
-  let mockExecute: jest.Mock;
-  let mockSelect: jest.Mock;
-  let mockFrom: jest.Mock;
-  let mockLimit: jest.Mock;
+  let mockExecute: Mock;
+  let mockSelect: Mock;
+  let mockFrom: Mock;
+  let mockLimit: Mock;
   let dbSpies: DbServiceSpies;
-  let logErrorSpy: SpyInstance;
+  let logErrorSpy: MockInstance;
 
   beforeEach(() => {
     dbSpies = createDrizzleDbSpies();
@@ -32,11 +35,11 @@ describe("Users Service", () => {
     mockFrom = dbSpies.mockFrom;
     mockLimit = dbSpies.mockLimit;
 
-    logErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    logErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("getOneUser", () => {
@@ -114,14 +117,14 @@ describe("Users Service", () => {
   });
 
   describe("getOneUserByID", () => {
-    let getOneUserSpy: SpyInstance;
+    let getOneUserSpy: MockInstance;
 
     beforeEach(() => {
-      getOneUserSpy = jest.spyOn(usersService, "getOneUser");
+      getOneUserSpy = vi.spyOn(usersService, "getOneUser");
     });
 
     afterEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it("should call getOneUser with correct whereClause and return user", async () => {
@@ -169,14 +172,14 @@ describe("Users Service", () => {
   });
 
   describe("getOneUserByEmail", () => {
-    let getOneUserSpy: SpyInstance;
+    let getOneUserSpy: MockInstance;
 
     beforeEach(() => {
-      getOneUserSpy = jest.spyOn(usersService, "getOneUser");
+      getOneUserSpy = vi.spyOn(usersService, "getOneUser");
     });
 
     afterEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it("should call getOneUser with correct whereClause and return user", async () => {
@@ -259,7 +262,7 @@ describe("Users Service", () => {
       const testError = new Error("DB failed");
       getOneUserSpy.mockRejectedValue(testError);
 
-      const consoleSpy = jest
+      const consoleSpy = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});
 
@@ -275,14 +278,14 @@ describe("Users Service", () => {
   });
 
   describe("getOneUserByUsername", () => {
-    let getOneUserSpy: SpyInstance;
+    let getOneUserSpy: MockInstance;
 
     beforeEach(() => {
-      getOneUserSpy = jest.spyOn(usersService, "getOneUser");
+      getOneUserSpy = vi.spyOn(usersService, "getOneUser");
     });
 
     afterEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it("should call getOneDojo with correct whereClause and return user", async () => {
@@ -331,7 +334,7 @@ describe("Users Service", () => {
 
   describe("fetchUserCards", () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it("should return user cards for a given user ID", async () => {
@@ -447,10 +450,10 @@ describe("Users Service", () => {
   });
 
   describe("saveUser", () => {
-    let getOneUserByIDSpy: SpyInstance;
+    let getOneUserByIDSpy: MockInstance;
 
     beforeEach(() => {
-      getOneUserByIDSpy = jest.spyOn(usersService, "getOneUserByID");
+      getOneUserByIDSpy = vi.spyOn(usersService, "getOneUserByID");
     });
 
     it("should insert a new user, fetch it, and return it", async () => {
@@ -499,7 +502,7 @@ describe("Users Service", () => {
   describe("saveUserCard", () => {
     it("should insert a new user card", async () => {
       const newUserCard = buildUserCardMock();
-      const mockValues = jest.fn().mockResolvedValue(undefined);
+      const mockValues = vi.fn().mockResolvedValue(undefined);
       dbSpies.mockInsert.mockReturnValue({ values: mockValues });
 
       await usersService.saveUserCard(newUserCard);
@@ -547,113 +550,6 @@ describe("Users Service", () => {
       });
 
       expect(dbSpies.runInTransactionSpy).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("setDefaultPaymentMethod", () => {
-    let retrievePaymentMethodSpy: SpyInstance;
-    let fetchUserCardsByPaymentMethodSpy: SpyInstance;
-    let saveUserCardSpy: SpyInstance;
-    const mockUser = buildUserMock();
-    const paymentMethodId = "pm_12345";
-    const mockStripeCard = buildStripePaymentMethodCardMock({
-      brand: "visa",
-      last4: "4242",
-      exp_month: 12,
-      exp_year: 2030,
-    });
-
-    beforeEach(() => {
-      jest.clearAllMocks(); // Clear  all mocks
-
-      retrievePaymentMethodSpy = jest
-        .spyOn(stripeService, "retrievePaymentMethod")
-        .mockResolvedValue({ card: mockStripeCard } as any);
-      fetchUserCardsByPaymentMethodSpy = jest.spyOn(
-        usersService,
-        "fetchUserCardsByPaymentMethod"
-      );
-      saveUserCardSpy = jest
-        .spyOn(usersService, "saveUserCard")
-        .mockResolvedValue();
-    });
-
-    it("should throw NotFoundException if payment method has no card", async () => {
-      retrievePaymentMethodSpy.mockResolvedValue({ card: null } as any);
-
-      await expect(
-        usersService.setDefaultPaymentMethod(mockUser, paymentMethodId)
-      ).rejects.toThrow(NotFoundException);
-      expect(logErrorSpy).not.toHaveBeenCalled();
-    });
-
-    it("should set all existing cards for user to isDefault: false", async () => {
-      fetchUserCardsByPaymentMethodSpy.mockResolvedValue([]);
-
-      await usersService.setDefaultPaymentMethod(mockUser, paymentMethodId);
-
-      expect(dbSpies.mockUpdate).toHaveBeenCalledWith(userCards);
-      expect(dbSpies.mockSet).toHaveBeenCalledWith({ isDefault: false });
-      expect(dbSpies.mockWhere).toHaveBeenCalledWith(
-        eq(userCards.userId, mockUser.id)
-      );
-    });
-
-    it("should save a new card if it does not exist", async () => {
-      fetchUserCardsByPaymentMethodSpy.mockResolvedValue([]);
-
-      await usersService.setDefaultPaymentMethod(mockUser, paymentMethodId);
-
-      expect(fetchUserCardsByPaymentMethodSpy).toHaveBeenCalledWith(
-        paymentMethodId,
-        expect.anything()
-      );
-      expect(saveUserCardSpy).toHaveBeenCalledWith(
-        {
-          userId: mockUser.id,
-          paymentMethodId: paymentMethodId,
-          brand: mockStripeCard.brand,
-          last4: mockStripeCard.last4,
-          expMonth: mockStripeCard.exp_month,
-          expYear: mockStripeCard.exp_year,
-          isDefault: true,
-        },
-        expect.anything() // for the transaction object
-      );
-    });
-
-    it("should update an existing card to be default if it exists", async () => {
-      const existingCard = buildUserCardMock({
-        paymentMethodId,
-        isDefault: false,
-      });
-      fetchUserCardsByPaymentMethodSpy.mockResolvedValue([existingCard]);
-
-      await usersService.setDefaultPaymentMethod(mockUser, paymentMethodId);
-
-      expect(saveUserCardSpy).not.toHaveBeenCalled();
-      // First call is to set all to false, second is to set the one to true
-      expect(dbSpies.mockUpdate).toHaveBeenCalledTimes(2);
-      expect(dbSpies.mockSet).toHaveBeenLastCalledWith({ isDefault: true });
-      expect(dbSpies.mockWhere).toHaveBeenLastCalledWith(
-        eq(userCards.paymentMethodId, paymentMethodId)
-      );
-    });
-
-    it("should use a provided transaction instance", async () => {
-      fetchUserCardsByPaymentMethodSpy.mockResolvedValue([]);
-
-      await usersService.setDefaultPaymentMethod(
-        mockUser,
-        paymentMethodId,
-        dbSpies.mockTx
-      );
-
-      expect(dbSpies.runInTransactionSpy).not.toHaveBeenCalled();
-      expect(fetchUserCardsByPaymentMethodSpy).toHaveBeenCalledWith(
-        paymentMethodId,
-        dbSpies.mockTx
-      );
     });
   });
 

@@ -162,55 +162,6 @@ export const fetchUserCardsByPaymentMethod = async (
   return txInstance ? execute(txInstance) : dbService.runInTransaction(execute);
 };
 
-export const setDefaultPaymentMethod = async (
-  user: IUser,
-  paymentMethod: string,
-  txInstance?: Transaction
-) => {
-  const execute = async (tx: Transaction) => {
-    const pm = await stripeService.retrievePaymentMethod(paymentMethod);
-    const card = pm.card;
-
-    if (!card) {
-      throw new NotFoundException("Card for payment method not found");
-    }
-
-    await tx
-      .update(userCards)
-      .set({ isDefault: false })
-      .where(eq(userCards.userId, user.id));
-
-    const existingCards = await fetchUserCardsByPaymentMethod(
-      paymentMethod,
-      tx
-    );
-
-    if (existingCards.length === 0) {
-      // Insert Card
-      await saveUserCard(
-        {
-          userId: user.id,
-          paymentMethodId: paymentMethod,
-          brand: card.brand,
-          last4: card.last4,
-          expMonth: card.exp_month,
-          expYear: card.exp_year,
-          isDefault: true,
-        },
-        tx
-      );
-    } else {
-      // Update existing card to be the default
-      await tx
-        .update(userCards)
-        .set({ isDefault: true })
-        .where(eq(userCards.paymentMethodId, paymentMethod));
-    }
-  };
-
-  return txInstance ? execute(txInstance) : dbService.runInTransaction(execute);
-};
-
 export const saveUser = async (user: INewUser, txInstance?: Transaction) => {
   const execute = async (tx: Transaction) => {
     const newUserId = await UserRepository.create(user, tx);
