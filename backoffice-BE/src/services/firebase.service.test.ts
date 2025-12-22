@@ -3,7 +3,7 @@ import type { Mock, MockInstance } from "vitest";
 import { SupportedOAuthProviders } from "../constants/enums.js";
 import { UnauthorizedException } from "../core/errors/index.js";
 import { buildDecodedIdTokenMock } from "../tests/factories/firebase.factory.js";
-import * as firebaseService from "./firebase.service.js";
+import {FirebaseService} from "./firebase.service.js";
 
 describe("Firebase Service", () => {
   describe("verifyFirebaseToken", () => {
@@ -19,7 +19,7 @@ describe("Firebase Service", () => {
        * This keeps the test close to real behavior and avoids brittle mocks.
        */
       verifyIdTokenSpy = vi
-        .spyOn(firebaseService, "getFirebaseAuth")
+        .spyOn(FirebaseService, "getFirebaseAuth")
         .mockReturnValue({
           verifyIdToken: mockVerifyIdToken,
         } as any);
@@ -41,7 +41,7 @@ describe("Firebase Service", () => {
         })
       );
 
-      const result = await firebaseService.verifyFirebaseToken("valid-token");
+      const result = await FirebaseService.verifyFirebaseToken("valid-token");
 
       expect(result).toEqual({
         uid: "firebase-uid",
@@ -59,11 +59,11 @@ describe("Firebase Service", () => {
       mockVerifyIdToken.mockResolvedValue(null);
 
       await expect(
-        firebaseService.verifyFirebaseToken("invalid-token")
+        FirebaseService.verifyFirebaseToken("invalid-token")
       ).rejects.toBeInstanceOf(UnauthorizedException);
 
       await expect(
-        firebaseService.verifyFirebaseToken("invalid-token")
+        FirebaseService.verifyFirebaseToken("invalid-token")
       ).rejects.toThrow("Invalid Token");
     });
 
@@ -77,7 +77,7 @@ describe("Firebase Service", () => {
       );
 
       await expect(
-        firebaseService.verifyFirebaseToken("token")
+        FirebaseService.verifyFirebaseToken("token")
       ).rejects.toThrow("Unsupported Auth provider");
     });
 
@@ -91,7 +91,7 @@ describe("Firebase Service", () => {
       );
 
       await expect(
-        firebaseService.verifyFirebaseToken("token")
+        FirebaseService.verifyFirebaseToken("token")
       ).rejects.toThrow("Email not provided by auth provider");
     });
 
@@ -101,7 +101,7 @@ describe("Firebase Service", () => {
       mockVerifyIdToken.mockRejectedValue(httpError);
 
       await expect(
-        firebaseService.verifyFirebaseToken("expired-token")
+        FirebaseService.verifyFirebaseToken("expired-token")
       ).rejects.toBe(httpError);
     });
 
@@ -109,11 +109,11 @@ describe("Firebase Service", () => {
       mockVerifyIdToken.mockRejectedValue(new Error("Firebase internal error"));
 
       await expect(
-        firebaseService.verifyFirebaseToken("token")
+        FirebaseService.verifyFirebaseToken("token")
       ).rejects.toBeInstanceOf(UnauthorizedException);
 
       await expect(
-        firebaseService.verifyFirebaseToken("token")
+        FirebaseService.verifyFirebaseToken("token")
       ).rejects.toThrow("Authentication failed");
     });
 
@@ -124,7 +124,7 @@ describe("Firebase Service", () => {
         signInProvider: `${SupportedOAuthProviders.Google}.com`,
       });
 
-      const result = await firebaseService.verifyFirebaseToken("token");
+      const result = await FirebaseService.verifyFirebaseToken("token");
 
       expect(result.emailVerified).toBe(false);
     });

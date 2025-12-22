@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import type { Mock, MockInstance } from "vitest";
-import Stripe from "stripe";
-import * as stripeService from "./stripe.service.js";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import type { MockInstance } from "vitest";
+import {StripePriceIDsMap, StripeService} from "./stripe.service.js";
 import AppConfig from "../config/AppConfig.js";
 import { StripePlans } from "../constants/enums.js";
 import {
@@ -23,7 +22,7 @@ describe("Stripe Service", () => {
     vi.clearAllMocks();
 
     getStripeInstanceSpy = vi
-      .spyOn(stripeService, "getStripeInstance")
+      .spyOn(StripeService, "getStripeInstance")
       .mockReturnValue({
         customers: {
           create: mockCustomersCreate,
@@ -47,7 +46,7 @@ describe("Stripe Service", () => {
       const mockCustomer = buildStripeCustMock({ id: "cus_123", email });
       mockCustomersCreate.mockResolvedValue(mockCustomer);
 
-      const result = await stripeService.createCustomer(name, email, {
+      const result = await StripeService.createCustomer(name, email, {
         userId: "1",
       });
 
@@ -64,14 +63,14 @@ describe("Stripe Service", () => {
     it("should call stripe.subscriptions.create with correct parameters for a STARTER plan", async () => {
       const mockCust = buildStripeCustMock({ id: "cus_123" });
       const plan = StripePlans.Monthly;
-      const priceId = stripeService.StripePriceIDsMap[plan];
+      const priceId = StripePriceIDsMap[plan];
       const mockSubscription = { id: "sub_123", status: "active" };
       const idempotencyKey = "idempotent-key";
       const paymentMethodId = "test-payment-method-id";
 
       mockSubscriptionsCreate.mockResolvedValue(mockSubscription);
 
-      const result = await stripeService.createSubscription({
+      const result = await StripeService.createSubscription({
         custId: mockCust.id,
         plan,
         paymentMethodId,
@@ -110,7 +109,7 @@ describe("Stripe Service", () => {
 
       mockPaymentMethodsRetrieve.mockResolvedValue(mockPaymentMethod);
 
-      const result = await stripeService.retrievePaymentMethod(paymentMethodId);
+      const result = await StripeService.retrievePaymentMethod(paymentMethodId);
 
       expect(mockPaymentMethodsRetrieve).toHaveBeenCalledWith(paymentMethodId);
       expect(result).toEqual(mockPaymentMethod);

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import AppConfig from "../config/AppConfig.js";
-import * as userService from "../services/users.service.js";
+import {UsersService} from "../services/users.service.js";
 import { NotFoundException } from "../core/errors/index.js";
 import type { TokenPayload } from "../utils/auth.utils.js";
 import { UnauthorizedException } from "../core/errors/index.js";
@@ -40,7 +40,7 @@ export const requireAuth = async (
     ) as TokenPayload;
 
     // Optionally: check if user still exists and is active
-    const user = await userService.getOneUserByID({ userId: decoded.userId });
+    const user = await UsersService.getOneUserByID({ userId: decoded.userId });
     if (!user) {
       throw new NotFoundException("User not found");
     }
