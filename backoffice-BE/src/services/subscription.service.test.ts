@@ -5,7 +5,6 @@ import {DojosService} from "./dojos.service.js";
 import {UsersService} from "./users.service.js";
 import {
   SubscriptionService,
-  assertDojoOwnership,
 } from "./subscription.service.js";
 import { DojoRepository, IDojo } from "../repositories/dojo.repository.js";
 import { SubscriptionRepository } from "../repositories/subscription.repository.js";
@@ -31,7 +30,6 @@ import {
   buildStripeSubMock,
 } from "../tests/factories/stripe.factory.js";
 import { createDrizzleDbSpies, DbServiceSpies } from "../tests/spies/drizzle-db.spies.js";
-import { DB } from "../db/index.js";
 
 describe("SubscriptionService", () => {
   let user: IUser;
@@ -85,19 +83,6 @@ describe("SubscriptionService", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-  });
-
-  describe("assertDojoOwnership", () => {
-    it("should not throw an error if the dojo belongs to the user", () => {
-      expect(() => assertDojoOwnership(dojo, user)).not.toThrow();
-    });
-
-    it("should throw ConflictException if the dojo does not belong to the user", () => {
-      const anotherUser = buildUserMock();
-      expect(() => assertDojoOwnership(dojo, anotherUser)).toThrow(
-        ConflictException
-      );
-    });
   });
 
   describe("getOrCreateStripeCustId", () => {
