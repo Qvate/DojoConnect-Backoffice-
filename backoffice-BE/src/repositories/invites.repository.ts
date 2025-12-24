@@ -50,4 +50,15 @@ export class InvitesRepository {
       tx,
     });
   }
+
+  static fetchDojoInstructorInvites = async (
+    dojoId: string,
+    tx: Transaction
+  ): Promise<IInstructorInvite[]> => {
+    return await tx
+      .select()
+      .from(instructorInvites)
+      .where(eq(instructorInvites.dojoId, dojoId))
+      .execute();
+  };
 }

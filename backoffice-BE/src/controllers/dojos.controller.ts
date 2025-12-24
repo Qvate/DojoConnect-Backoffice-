@@ -23,6 +23,19 @@ export class DojosController {
     res.json(formatApiResponse({ data: dojo }));
   }
 
+  static async handleFetchInvitedInstructors(req: Request, res: Response) {
+    const dojoId = req.params.dojoId;
+    if (!dojoId) {
+      throw new BadRequestException("Dojo ID is required");
+    }
+
+    const instructors = await DojosService.fetchInvitedInstructors({
+      dojoId,
+    });
+
+    res.json(formatApiResponse({ data: instructors }));
+  }
+
   static async handleInviteInstructor(req: Request, res: Response) {
     const dojo = req.dojo;
     const user = req.user;

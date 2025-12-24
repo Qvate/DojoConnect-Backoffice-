@@ -11,8 +11,16 @@ const router = Router();
 
 router.get("/slug/:slug", DojosController.handleFetchDojoByTag);
 
+router.get(
+  "/:dojoId/instructors/invites",
+  requireAuth,
+  requireRole(Role.DojoAdmin),
+  isDojoOwnerMiddleware,
+  DojosController.handleFetchInvitedInstructors
+);
+
 router.post(
-  "/:dojoId/instructors/invite",
+  "/:dojoId/instructors/invites",
   requireAuth,
   requireRole(Role.DojoAdmin),
   isDojoOwnerMiddleware,

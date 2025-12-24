@@ -20,6 +20,7 @@ import { InstructorInviteStatus } from "../constants/enums.js";
 import { InstructorService } from "./instructors.service.js";
 import { ClassService } from "./class.service.js";
 import { MailerService } from "./mailer.service.js";
+import { InvitedInstructorDTO } from "../dtos/instructor.dtos.js";
 
 export class DojosService {
   static getOneDojo = async (
@@ -227,6 +228,26 @@ export class DojosService {
       });
     };
 
+    return txInstance
+      ? execute(txInstance)
+      : dbService.runInTransaction(execute);
+  };
+
+  static fetchInvitedInstructors = async ({
+    dojoId,
+    txInstance,
+  }: {
+    dojoId: string;
+    txInstance?: Transaction;
+  }): Promise<InvitedInstructorDTO[]> => {
+    const execute = async (tx: Transaction) => {
+      const invites = await InvitesRepository.fetchDojoInstructorInvites(
+        dojoId,
+        tx
+      );
+
+      return invites.map((invite) => new InvitedInstructorDTO(invite));
+    };
     return txInstance
       ? execute(txInstance)
       : dbService.runInTransaction(execute);
