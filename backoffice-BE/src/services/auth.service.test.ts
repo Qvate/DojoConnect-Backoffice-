@@ -167,7 +167,7 @@ describe("Auth Service", () => {
         txInstance: dbSpies.mockTx,
       });
       expect(generateAuthTokensSpy).toHaveBeenCalled();
-      expect(result).toEqual({
+      expect(result.toJSON()).toEqual({
         accessToken: "access",
         refreshToken: "refresh",
         user: new UserDTO(mockUser).toJSON(),
@@ -331,7 +331,7 @@ describe("Auth Service", () => {
       expect(getOneUserByIDSpy).toHaveBeenCalledWith({
         userId: mockUser.id,
       });
-      expect(result).toEqual({
+      expect(result.toJSON()).toEqual({
         accessToken: "new_access",
         refreshToken: "new_refresh",
         user: new UserDTO(mockUser).toJSON(),

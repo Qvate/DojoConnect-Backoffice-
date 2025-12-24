@@ -86,6 +86,18 @@ export enum InstructorInviteStatus {
   Declined = "declined",
 }
 
+export enum ClassLevel {
+  Beginner = "Beginner",
+  Intermediate = "Intermediate",
+  Advanced = "Advanced",
+}
+
+export enum ClassStatus {
+  Active = "active",
+  Deleted = "deleted",
+  Hidden = "hide",
+}
+
 export const ACTIVE_BILLING_STATUSES = [
   BillingStatus.Trialing,
   BillingStatus.Active,

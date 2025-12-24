@@ -28,6 +28,8 @@ import {
   ACTIVE_BILLING_STATUSES,
   StripeSubscriptionStatus,
   InstructorInviteStatus,
+  ClassLevel,
+  ClassStatus,
 } from "../constants/enums.js";
 
 const activeBillingStatusesSql = sql.join(
@@ -163,18 +165,18 @@ export const classes = mysqlTable(
     ownerEmail: varchar("owner_email", { length: 255 }).notNull(),
     className: varchar("class_name", { length: 255 }).notNull(),
     description: text(),
-    level: mysqlEnum(["Beginner", "Intermediate", "Advanced"]),
+    level: mysqlEnum(ClassLevel).notNull(),
     ageGroup: varchar("age_group", { length: 50 }),
     frequency: varchar({ length: 50 }),
     capacity: int(),
     location: varchar({ length: 255 }),
     streetAddress: varchar("street_address", { length: 255 }),
     city: varchar({ length: 255 }),
-    status: mysqlEnum(["active", "deleted", "hide"]).default("active"),
-    createdAt: timestamp("created_at", { mode: "string" })
+    status: mysqlEnum(ClassStatus).default(ClassStatus.Active).notNull(),
+    createdAt: timestamp("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    updatedAt: timestamp("updated_at",)
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     imagePath: varchar("image_path", { length: 255 }),
@@ -372,6 +374,9 @@ export const dojoInstructors = mysqlTable("dojo_instructors", {
   dojoId: varchar("dojo_id", { length: 64 })
     .notNull()
     .references(() => dojos.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const messages = mysqlTable(
