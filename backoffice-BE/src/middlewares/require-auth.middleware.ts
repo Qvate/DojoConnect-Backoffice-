@@ -1,18 +1,23 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { TokenExpiredError } from "jsonwebtoken";
-import AppConfig from "../config/AppConfig";
-import * as userService from "../services/users.service";
-import { NotFoundException } from "../core/errors/NotFoundException";
-import type { TokenPayload } from "../utils/auth.utils";
-import { UnauthorizedException } from "../core/errors/UnauthorizedException";
-import { HttpException } from "../core/errors/HttpException";
-import { IUser } from "../repositories/user.repository";
+import jwt from "jsonwebtoken";
+import AppConfig from "../config/AppConfig.js";
+import {UsersService} from "../services/users.service.js";
+import { NotFoundException } from "../core/errors/index.js";
+import type { TokenPayload } from "../utils/auth.utils.js";
+import { UnauthorizedException } from "../core/errors/index.js";
+import { HttpException } from "../core/errors/index.js";
+import { IUser } from "../repositories/user.repository.js";
+import { IDojo } from "../repositories/dojo.repository.js";
+
+// Now you can access TokenExpiredError from the imported jwt object
+const { TokenExpiredError } = jwt;
 
 // Extend Express Request type to include user
 declare global {
   namespace Express {
     interface Request {
       user?: IUser;
+      dojo?: IDojo
     }
   }
 }
@@ -37,7 +42,7 @@ export const requireAuth = async (
     ) as TokenPayload;
 
     // Optionally: check if user still exists and is active
-    const user = await userService.getOneUserByID({ userId: decoded.userId });
+    const user = await UsersService.getOneUserByID({ userId: decoded.userId });
     if (!user) {
       throw new NotFoundException("User not found");
     }

@@ -2,8 +2,8 @@
 import jwt from "jsonwebtoken";
 import argon2 from "@node-rs/argon2";
 import crypto from "crypto";
-import AppConfig from "../config/AppConfig";
-import { BadRequestException } from "../core/errors";
+import AppConfig from "../config/AppConfig.js";
+import { BadRequestException } from "../core/errors/index.js";
 
 export interface TokenPayload {
   userId: string;
@@ -79,3 +79,7 @@ export const verifyPasswordResetToken = (
 
   return payload;
 };
+
+export const generateInviteToken = () => {
+  return crypto.randomBytes(32).toString("hex");
+}

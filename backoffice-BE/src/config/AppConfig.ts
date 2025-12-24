@@ -1,6 +1,6 @@
 import { z } from "zod";
 import dotenv from "dotenv";
-import { NodeEnv } from "../constants/enums";
+import { NodeEnv } from "../constants/enums.js";
 
 dotenv.config();
 
@@ -27,6 +27,8 @@ export const appConfigSchema = z.object({
 
   STRIPE_SECRET_KEY: z.string().nonempty(),
   STRIPE_TEST_SECRET_KEY: z.string(),
+
+  WEB_URL: z.string().nonempty().url(),
 });
 
 // extract the inferred type
@@ -55,6 +57,8 @@ export const AppConfig: IAppConfig = {
 
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || "",
   STRIPE_TEST_SECRET_KEY: process.env.STRIPE_TEST_SECRET_KEY || "",
+
+  WEB_URL: process.env.WEB_URL || "",
 };
 
 export default AppConfig;

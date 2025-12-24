@@ -1,32 +1,24 @@
-import { eq, InferSelectModel } from "drizzle-orm";
-import { userCards, users } from "../db/schema";
-import * as dbService from "../db";
-import * as stripeService from "./stripe.service";
-import * as dojosService from "./dojos.service";
-import * as usersService from "./users.service";
-import { returnFirst } from "../utils/db.utils";
-import { ConflictException } from "../core/errors/ConflictException";
-import { hashPassword } from "../utils/auth.utils";
-import { DojoRepository, IDojo } from "../repositories/dojo.repository";
-import { Transaction } from "../db";
+import * as dbService from "../db/index.js";
+import  {StripeService} from "./stripe.service.js";
+import { DojosService} from "./dojos.service.js";
+import {UsersService} from "./users.service.js";
+import { ConflictException } from "../core/errors/index.js";
+import { DojoRepository, IDojo } from "../repositories/dojo.repository.js";
+import { Transaction } from "../db/index.js";
 import {
   BillingStatus,
   DojoStatus,
   StripeSetupIntentStatus,
   StripeSubscriptionStatus,
-} from "../constants/enums";
-import { IUser } from "../repositories/user.repository";
-import { SubscriptionRepository } from "../repositories/subscription.repository";
-import { BadRequestException, NotFoundException } from "../core/errors";
+} from "../constants/enums.js";
+import { IUser } from "../repositories/user.repository.js";
+import { SubscriptionRepository } from "../repositories/subscription.repository.js";
+import {
+  BadRequestException,
+  NotFoundException,
+} from "../core/errors/index.js";
 import Stripe from "stripe";
-
-export function assertDojoOwnership(dojo: IDojo, user: IUser): asserts dojo {
-  if (dojo.userId !== user.id) {
-    throw new ConflictException(
-      `Dojo ownership mismatch: Dojo ${dojo.userId} does not belong to User ${user.id}`
-    );
-  }
-}
+import { assertDojoOwnership } from "../utils/assertions.utils.js";
 
 export class SubscriptionService {
   static getOrCreateStripeCustId = async ({
@@ -44,16 +36,11 @@ export class SubscriptionService {
         return user.stripeCustomerId;
       }
 
-      const customer = await stripeService.createCustomer(
-        user.name,
-        user.email,
-        {
-          ...metadata,
-          userId: user.id,
-        }
+      const customer = await StripeService.createCustomer(
+        user
       );
 
-      await usersService.updateUser({
+      await UsersService.updateUser({
         userId: user.id,
         update: {
           stripeCustomerId: customer.id,
@@ -100,7 +87,7 @@ export class SubscriptionService {
         subscription.billingStatus === BillingStatus.SetupIntentCreated &&
         subscription.stripeSetupIntentId
       ) {
-        const setupIntent = await stripeService.retrieveSetupIntent(
+        const setupIntent = await StripeService.retrieveSetupIntent(
           subscription.stripeSetupIntentId
         );
 
@@ -112,7 +99,7 @@ export class SubscriptionService {
       }
 
       // 3. Create new SetupIntent
-      const setupIntent = await stripeService.setupIntent(stripeCustomerId);
+      const setupIntent = await StripeService.setupIntent(stripeCustomerId);
 
       await SubscriptionRepository.createDojoAdminSub(
         {
@@ -123,7 +110,7 @@ export class SubscriptionService {
         tx
       );
 
-      await dojosService.updateDojo({
+      await DojosService.updateDojo({
         dojoId: dojo.id,
         update: {
           status: DojoStatus.OnboardingIncomplete,
@@ -149,7 +136,7 @@ export class SubscriptionService {
     txInstance?: Transaction;
   }) => {
     const execute = async (tx: Transaction) => {
-      const dojo = await dojosService.getOneDojoByUserId({
+      const dojo = await DojosService.getOneDojoByUserId({
         userId: user.id,
         txInstance: tx,
       });
@@ -172,7 +159,7 @@ export class SubscriptionService {
         return;
       }
 
-      const setupIntent = await stripeService.retrieveSetupIntent(
+      const setupIntent = await StripeService.retrieveSetupIntent(
         sub.stripeSetupIntentId
       );
 
@@ -184,15 +171,13 @@ export class SubscriptionService {
 
       const grantTrial = !dojo.hasUsedTrial;
 
-      const stripeSub = await stripeService.createSubscription({
+      const stripeSub = await StripeService.createSubscription({
         custId: user.stripeCustomerId,
         plan: dojo.activeSub,
         grantTrial,
         paymentMethodId,
         idempotencyKey: `dojo-admin-sub-${sub.id}`,
       });
-
-      console.log("Sub: ", stripeSub);
 
       const billingStatus = this.mapStripeSubStatus(stripeSub.status);
       const dojoStatus = this.deriveDojoStatus(billingStatus);

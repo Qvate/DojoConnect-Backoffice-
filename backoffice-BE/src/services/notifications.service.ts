@@ -1,50 +1,71 @@
-import { NotificationType } from "../constants/enums";
-import { InternalServerErrorException } from "../core/errors/InternalServerErrorException";
-import { NotificationRepository } from "../repositories/notification.repository";
-import * as firebaseService from "./firebase.service";
+import { NotificationType } from "../constants/enums.js";
+import { InternalServerErrorException } from "../core/errors/index.js";
+import { NotificationRepository } from "../repositories/notification.repository.js";
+import { FirebaseService } from "./firebase.service.js";
 
 export type BaseNotificationData = {};
 
 export type SignUpSuccessfulNotificationData = {
-  push_data: string;
+  screen: string;
 };
 
 export type NotificationData =
   | BaseNotificationData
   | SignUpSuccessfulNotificationData;
 
-export const sendNotification = async ({
-  type,
-  fcmToken,
-  userId,
-  title,
-  body = "",
-  data,
-}: {
-  userId: string;
-  fcmToken: string;
-  title: string;
-  body?: string;
-  data: NotificationData;
-  type: NotificationType;
-}) => {
-  try {
-    const message = {
-      token: fcmToken,
-      data: data,
-      notification: { title, body },
+export class NotificationService {
+  static sendNotification = async ({
+    type,
+    fcmToken,
+    userId,
+    title,
+    body = "",
+    data,
+  }: {
+    userId: string;
+    fcmToken: string;
+    title: string;
+    body?: string;
+    data: NotificationData;
+    type: NotificationType;
+  }) => {
+    try {
+      const message = {
+        token: fcmToken,
+        data: data,
+        notification: { title, body },
+      };
+
+      await NotificationRepository.create({
+        type,
+        userId: userId,
+        title,
+      });
+
+      const response = await FirebaseService.getFirebaseMessaging().send(
+        message
+      );
+      console.log(`Successfully sent ${type} notification:`, response);
+    } catch (error) {
+      console.log(`Error sending ${type} notification:`, error);
+      throw new InternalServerErrorException("Error Sending Notification");
+    }
+  };
+
+  static sendSignUpNotification = async (userId: string, fcmToken: string) => {
+    const title = "Welcome to Dojo Connect!";
+    const body = "Your Dojo Admin account has been created successfully.";
+    const data: SignUpSuccessfulNotificationData = {
+      screen: "complete_profile",
     };
 
-    await NotificationRepository.create({
-      type,
-      userId: userId,
+    await this.sendNotification({
+      type: NotificationType.SignUp,
+      fcmToken,
+      userId,
       title,
+      body,
+      data,
     });
-
-    const response = await firebaseService.getFirebaseMessaging().send(message);
-    console.log(`Successfully sent ${type} notification:`, response);
-  } catch (error) {
-    console.log(`Error sending ${type} notification:`, error);
-    throw new InternalServerErrorException("Error Sending Notification");
-  }
-};
+  };
+}
