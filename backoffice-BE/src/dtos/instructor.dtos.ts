@@ -54,7 +54,7 @@ export class InvitedInstructorDTO implements IInstructorInvite {
 export class InstructorInviteDetailsDTO {
   firstName: string;
   lastName: string;
-  instructorEmail: string;
+  email: string;
   expiresAt: Date;
   dojoName: string;
   className: string | null;
@@ -63,7 +63,7 @@ export class InstructorInviteDetailsDTO {
   constructor(params: InstructorInviteDetails) {
     this.firstName = params.firstName;
     this.lastName = params.lastName;
-    this.instructorEmail = params.email;
+    this.email = params.email;
     this.expiresAt = params.expiresAt;
     this.dojoName = params.dojoName;
     this.className = params.className;
@@ -73,7 +73,7 @@ export class InstructorInviteDetailsDTO {
   toJSON() {
     return {
       name: getFullName(this.firstName, this.lastName),
-      email: this.instructorEmail,
+      email: this.email,
       expiresAt: this.expiresAt,
       dojoName: this.dojoName,
       className: this.className,

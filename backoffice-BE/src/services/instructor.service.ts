@@ -10,7 +10,6 @@ import {
 import { InvitesRepository } from "../repositories/invites.repository.js";
 import { HttpException } from "../core/errors/HttpException.js";
 import { InstructorInviteStatus } from "../constants/enums.js";
-import { BadRequestException } from "../core/errors/BadRequestException.js";
 import { hashToken } from "../utils/auth.utils.js";
 import { DeclineInviteDTO } from "../validations/instructors.schemas.js";
 import { ConflictException } from "../core/errors/ConflictException.js";
