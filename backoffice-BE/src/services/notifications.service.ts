@@ -1,9 +1,11 @@
-import { NotificationType } from "../constants/enums.js";
-import { InternalServerErrorException } from "../core/errors/index.js";
+import {
+  InstructorInviteStatus,
+  NotificationType,
+} from "../constants/enums.js";
 import { InstructorInviteDetails } from "../repositories/invites.repository.js";
 import { NotificationRepository } from "../repositories/notification.repository.js";
 import { IUser } from "../repositories/user.repository.js";
-import { getFullName } from "../utils/text.utils.js";
+import { capitalize, getFullName } from "../utils/text.utils.js";
 import { FirebaseService } from "./firebase.service.js";
 
 export type BaseNotificationData = {};
@@ -55,7 +57,6 @@ export class NotificationService {
       console.log(`Successfully sent ${type} notification:`, response);
     } catch (error) {
       console.log(`Error sending ${type} notification:`, error);
-      throw new InternalServerErrorException("Error Sending Notification");
     }
   };
 
@@ -75,20 +76,41 @@ export class NotificationService {
     });
   };
 
-  static sendInviteDeclinedNotification = async (
-    user: IUser,
-    inviteDetails: InstructorInviteDetails
-  ) => {
-    const title = "Instructor Invite Declined";
+  static notifyDojoOwnerOfInviteResponse = async ({
+    user,
+    inviteDetails,
+    status,
+  }: {
+    user: IUser;
+    inviteDetails: InstructorInviteDetails;
+    status: InstructorInviteStatus.Accepted | InstructorInviteStatus.Declined;
+  }) => {
+    const title = `Instructor Invite ${capitalize(status)}`;
     const body = `${getFullName(
       inviteDetails.firstName,
       inviteDetails.lastName
-    )} has declined your invite to become an instructor for ${
+    )} has ${status} your invite to become an instructor for ${
       inviteDetails.dojoName
     }.`;
 
     await this.sendAndSaveNotification({
-      type: NotificationType.Message,
+      type: NotificationType.InvitationResponse,
+      user,
+      title,
+      body,
+      data: {},
+    });
+  };
+
+  static sendInviteAcceptedNotification = async (
+    user: IUser,
+    inviteDetails: InstructorInviteDetails
+  ) => {
+    const title = "Invite Accepted";
+    const body = `You accepted the invite to become an instructor for ${inviteDetails.dojoName}.`;
+
+    await this.sendAndSaveNotification({
+      type: NotificationType.InvitationAccepted,
       user,
       title,
       body,

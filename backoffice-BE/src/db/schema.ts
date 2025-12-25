@@ -372,7 +372,7 @@ export const dojoInstructors = mysqlTable("dojo_instructors", {
     .$defaultFn(() => uuidv7()),
   userId: varchar("user_id", { length: 64 })
     .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+    .references(() => users.id, { onDelete: "cascade" }).unique(),
   dojoId: varchar("dojo_id", { length: 64 })
     .notNull()
     .references(() => dojos.id, { onDelete: "cascade" }),

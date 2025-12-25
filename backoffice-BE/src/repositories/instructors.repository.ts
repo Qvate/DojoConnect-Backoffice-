@@ -39,7 +39,7 @@ export class InstructorsRepository {
       whereClause: eq(dojoInstructors.userId, userId),
       tx,
     });
-  }
+  };
 
   static findOneByUserIdAndDojoId(
     userId: string,
@@ -55,5 +55,17 @@ export class InstructorsRepository {
     });
   }
 
-  
+  static attachInstructorToDojo = async (
+    userId: string,
+    dojoId: string,
+    tx: Transaction
+  ) => {
+    return tx
+      .insert(dojoInstructors)
+      .values({
+        userId,
+        dojoId,
+      })
+      .execute();
+  };
 }

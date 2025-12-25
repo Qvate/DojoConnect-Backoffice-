@@ -1,8 +1,5 @@
-import {
-  Role,
-  StripePlans,
-  SupportedOAuthProviders,
-} from "../../constants/enums.js";
+import { faker } from "@faker-js/faker";
+import { StripePlans, SupportedOAuthProviders } from "../../constants/enums.js";
 import {
   AuthResponseDTO,
   AuthResponseDTOParams,
