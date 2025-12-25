@@ -1,6 +1,9 @@
 import { NotificationType } from "../constants/enums.js";
 import { InternalServerErrorException } from "../core/errors/index.js";
+import { InstructorInviteDetails } from "../repositories/invites.repository.js";
 import { NotificationRepository } from "../repositories/notification.repository.js";
+import { IUser } from "../repositories/user.repository.js";
+import { getFullName } from "../utils/text.utils.js";
 import { FirebaseService } from "./firebase.service.js";
 
 export type BaseNotificationData = {};
@@ -69,6 +72,27 @@ export class NotificationService {
       title,
       body,
       data,
+    });
+  };
+
+  static sendInviteDeclinedNotification = async (
+    user: IUser,
+    inviteDetails: InstructorInviteDetails
+  ) => {
+    const title = "Instructor Invite Declined";
+    const body = `${getFullName(
+      inviteDetails.firstName,
+      inviteDetails.lastName
+    )} has declined your invite to become an instructor for ${
+      inviteDetails.dojoName
+    }.`;
+
+    await this.sendAndSaveNotification({
+      type: NotificationType.Message,
+      user,
+      title,
+      body,
+      data: {},
     });
   };
 }

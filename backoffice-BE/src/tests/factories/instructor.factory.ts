@@ -1,8 +1,12 @@
 import { faker } from "@faker-js/faker";
 import { InstructorInviteStatus } from "../../constants/enums.js";
 import { IDojoInstructor } from "../../repositories/instructors.repository.js";
-import { IInstructorInvite } from "../../repositories/invites.repository.js";
+import {
+  IInstructorInvite,
+  InstructorInviteDetails,
+} from "../../repositories/invites.repository.js";
 import { InviteInstructorDTO } from "../../validations/instructors.schemas.js";
+import { addDays } from "date-fns";
 
 export const buildInstructorInviteMock = (
   overrides?: Partial<IInstructorInvite>
@@ -47,3 +51,19 @@ export const buildInviteInstructorDtoMock = (
     ...overrides,
   };
 };
+
+export const buildInviteDetailsMock = (
+  overrides?: Partial<InstructorInviteDetails>
+): InstructorInviteDetails => ({
+  id: faker.string.uuid(),
+  firstName: faker.person.firstName(),
+  lastName: faker.person.lastName(),
+  email: faker.internet.email(),
+  status: InstructorInviteStatus.Pending,
+  expiresAt: addDays(new Date(), 7),
+  dojoOwnerId: faker.string.uuid(),
+  dojoName: "Test Dojo",
+  className: null,
+  invitedAt: new Date(),
+  ...overrides,
+});

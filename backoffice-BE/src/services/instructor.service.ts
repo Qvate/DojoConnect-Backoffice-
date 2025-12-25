@@ -13,6 +13,8 @@ import { InstructorInviteStatus } from "../constants/enums.js";
 import { hashToken } from "../utils/auth.utils.js";
 import { DeclineInviteDTO } from "../validations/instructors.schemas.js";
 import { ConflictException } from "../core/errors/ConflictException.js";
+import { UsersService } from "./users.service.js";
+import { NotificationService } from "./notifications.service.js";
 
 export class InstructorService {
   static findInstructorByUserId = async (
@@ -47,9 +49,7 @@ export class InstructorService {
       }
 
       if (invite.status !== InstructorInviteStatus.Pending) {
-        throw new ConflictException(
-          `Invite has already been ${invite.status}`
-        );
+        throw new ConflictException(`Invite has already been ${invite.status}`);
       }
 
       return new InstructorInviteDetailsDTO(invite);
@@ -73,12 +73,24 @@ export class InstructorService {
       }
 
       if (invite.status !== InstructorInviteStatus.Pending) {
-        throw new ConflictException(
-          `Invite has already been ${invite.status}`
-        );
+        throw new ConflictException(`Invite has already been ${invite.status}`);
       }
 
       await InvitesRepository.markInviteAsDeclined(invite.id, tx);
+
+      // Notify the inviter about the decline
+      const dojoOwner = await UsersService.getOneUserByID({
+        userId: invite.dojoOwnerId,
+      });
+
+      if (!dojoOwner) {
+        throw new NotFoundException("Dojo owner not found");
+      }
+
+      await NotificationService.sendInviteDeclinedNotification(
+        dojoOwner,
+        invite
+      );
     };
 
     return txInstance

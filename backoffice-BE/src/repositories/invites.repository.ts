@@ -25,6 +25,7 @@ export interface InstructorInviteDetails {
   status: InstructorInviteStatus;
   expiresAt: Date;
   dojoName: string;
+  dojoOwnerId: string;
   className: string | null;
   invitedAt: Date;
 }
@@ -53,6 +54,16 @@ export class InvitesRepository {
         .limit(1)
         .execute()
     );
+  }
+
+  static getOneInstructorInviteByTokenHash(
+    tokenHash: string,
+    tx: Transaction
+  ) {
+    return this.findOneInstructorInvite({
+      whereClause: eq(instructorInvites.tokenHash, tokenHash),
+      tx,
+    });
   }
 
   static getOnePendingInviteByEmailAndDojoId(
@@ -100,6 +111,7 @@ export class InvitesRepository {
         expiresAt: instructorInvites.expiresAt,
         dojoName: dojos.name, // join with dojos table
         className: classes.className, // join with classes table if classId exists
+        dojoOwnerId: dojos.userId,
         invitedAt: instructorInvites.createdAt,
       })
       .from(instructorInvites)

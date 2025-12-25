@@ -6,36 +6,28 @@ import { NotFoundException } from "../core/errors/NotFoundException.js";
 import { HttpException } from "../core/errors/HttpException.js";
 import { ConflictException } from "../core/errors/ConflictException.js";
 import { InstructorInviteStatus } from "../constants/enums.js";
-import { InstructorInviteDetails } from "../repositories/invites.repository.js";
-import { faker } from "@faker-js/faker";
-import { addDays, subDays } from "date-fns";
+import {  subDays } from "date-fns";
 import { InstructorInviteDetailsDTO } from "../dtos/instructor.dtos.js";
-import { createDrizzleDbSpies, DbServiceSpies } from "../tests/spies/drizzle-db.spies.js";
+import {
+  createDrizzleDbSpies,
+  DbServiceSpies,
+} from "../tests/spies/drizzle-db.spies.js";
+import { buildInviteDetailsMock } from "../tests/factories/instructor.factory.js";
+import { NotificationService } from "./notifications.service.js";
+import { UsersService } from "./users.service.js";
+import { buildUserMock } from "../tests/factories/user.factory.js";
 
 vi.mock("../utils/auth.utils.js", () => ({
   hashToken: (token) => `hashed-${token}`,
 }));
 
-
-const buildInviteDetailsMock = (
-  overrides?: Partial<InstructorInviteDetails>
-): InstructorInviteDetails => ({
-  id: faker.string.uuid(),
-  firstName: faker.person.firstName(),
-  lastName: faker.person.lastName(),
-  email: faker.internet.email(),
-  status: InstructorInviteStatus.Pending,
-  expiresAt: addDays(new Date(), 7),
-  dojoName: "Test Dojo",
-  className: null,
-  invitedAt: new Date(),
-  ...overrides,
-});
-
 describe("InstructorService", () => {
+  const mockUser = buildUserMock();
+
   let getInviteDetailsSpy: MockInstance;
   let markAsExpiredSpy: MockInstance;
   let dbServiceSpies: DbServiceSpies;
+  let getOneUserByIDSpy: MockInstance;
 
   beforeEach(() => {
     dbServiceSpies = createDrizzleDbSpies();
@@ -43,6 +35,9 @@ describe("InstructorService", () => {
     markAsExpiredSpy = vi
       .spyOn(InvitesRepository, "markInviteAsExpired")
       .mockResolvedValue();
+    getOneUserByIDSpy = vi
+      .spyOn(UsersService, "getOneUserByID")
+      .mockResolvedValue(mockUser);
   });
 
   afterEach(() => {
@@ -83,7 +78,10 @@ describe("InstructorService", () => {
         InstructorService.getInviteDetails("expired-token")
       ).rejects.toThrow(new HttpException(410, "Invite has expired"));
 
-      expect(markAsExpiredSpy).toHaveBeenCalledWith(mockDetails.id, dbServiceSpies.mockTx);
+      expect(markAsExpiredSpy).toHaveBeenCalledWith(
+        mockDetails.id,
+        dbServiceSpies.mockTx
+      );
     });
 
     it("should throw ConflictException if invite is not pending", async () => {
@@ -102,10 +100,15 @@ describe("InstructorService", () => {
 
   describe("declineInvite", () => {
     let markAsDeclinedSpy: MockInstance;
+    let sendInviteDeclinedNotificationSpy: MockInstance;
 
     beforeEach(() => {
       markAsDeclinedSpy = vi
         .spyOn(InvitesRepository, "markInviteAsDeclined")
+        .mockResolvedValue();
+
+      sendInviteDeclinedNotificationSpy = vi
+        .spyOn(NotificationService, "sendInviteDeclinedNotification")
         .mockResolvedValue();
     });
 
@@ -122,6 +125,11 @@ describe("InstructorService", () => {
       expect(markAsDeclinedSpy).toHaveBeenCalledWith(
         mockDetails.id,
         dbServiceSpies.mockTx
+      );
+
+      expect(sendInviteDeclinedNotificationSpy).toHaveBeenCalledWith(
+        mockUser,
+        mockDetails
       );
     });
 
