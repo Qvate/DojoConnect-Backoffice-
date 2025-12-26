@@ -39,6 +39,7 @@ export class InstructorService {
       : dbService.runInTransaction(execute);
   };
 
+
   static getInviteDetails = async (
     token: string,
     txInstance?: Transaction

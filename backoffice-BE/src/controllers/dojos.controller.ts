@@ -54,13 +54,24 @@ export class DojosController {
       dto: req.body,
     });
 
-    res
-      .status(201)
-      .json(
-        formatApiResponse({
-          data: undefined,
-          message: "Instructor invited successfully",
-        })
-      );
+    res.status(201).json(
+      formatApiResponse({
+        data: undefined,
+        message: "Instructor invited successfully",
+      })
+    );
+  }
+
+  static async handleFetchDojoInstructors(req: Request, res: Response) {
+    const dojoId = req.params.dojoId;
+
+    const instructors = await DojosService.fetchInstructors({ dojoId });
+
+    res.status(200).json(
+      formatApiResponse({
+        data: instructors,
+        message: "Instructors fetched successfully",
+      })
+    );
   }
 }

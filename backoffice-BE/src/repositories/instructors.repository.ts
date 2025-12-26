@@ -1,5 +1,5 @@
 import { and, eq, InferInsertModel, InferSelectModel, SQL } from "drizzle-orm";
-import { dojoInstructors } from "../db/schema.js";
+import { dojoInstructors, users } from "../db/schema.js";
 import { Transaction } from "../db/index.js";
 import { returnFirst } from "../utils/db.utils.js";
 
@@ -8,6 +8,15 @@ export type INewDojoInstructor = InferInsertModel<typeof dojoInstructors>;
 export type IUpdateDojoInstructor = Partial<
   Omit<INewDojoInstructor, "id" | "createdAt">
 >;
+
+export interface InstructorDetails {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  dojoId: string;
+  createdAt: Date;
+}
 
 export class InstructorsRepository {
   static async findOne({
@@ -54,6 +63,29 @@ export class InstructorsRepository {
       tx,
     });
   }
+
+  static fetchDojoInstructors = async ({
+    dojoId,
+    tx,
+  }: {
+    dojoId: string;
+    tx: Transaction;
+  }): Promise<InstructorDetails[]> => {
+    return await tx
+      .select({
+        id: dojoInstructors.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        dojoId: dojoInstructors.dojoId,
+        createdAt: dojoInstructors.createdAt,
+      })
+      .from(dojoInstructors)
+      .innerJoin(users, eq(dojoInstructors.userId, users.id))
+      .where(eq(dojoInstructors.dojoId, dojoId))
+      .orderBy(dojoInstructors.createdAt)
+      .execute();
+  };
 
   static attachInstructorToDojo = async (
     userId: string,
